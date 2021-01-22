@@ -39,11 +39,13 @@ public class CardServiceImpl implements CardService {
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
     @Produces({MediaType.APPLICATION_JSON})
     public Page<Card> queryPageByCardVO(CardVO cardVO) {
-        Card card = cardVO.getCard();
-        Integer page = cardVO.getPage();
-        Integer size = cardVO.getSize();
-        Example<Card> of = Example.of(card);
-        return repository.findAll(of, PageRequest.of(page, size));
+        PageRequest pageRequest = CardVOUtils.parsePageRequest(cardVO);
+        Example<Card> of = Example.of(cardVO.getCard());
+        try {
+            return repository.findAll(of, pageRequest);
+        } catch (Exception e) {
+            throw new WebApplicationException(e.getMessage());
+        }
     }
 
 
