@@ -71,6 +71,7 @@
     </dependencyManagement>
 
     <build>
+        <finalName>esmwiki-producer</finalName>
         <sourceDirectory>src/main/java</sourceDirectory>
         <plugins>
             <plugin>
