@@ -19,7 +19,7 @@ import java.util.HashMap;
 public class Card implements Serializable {
     private static final long serialVersionUID = -7295866083951790960L;
     @Id
-    private ObjectId id;
+    private String id;
     private String cardName;
     private String appendDate;
     private Integer cardSortNum;

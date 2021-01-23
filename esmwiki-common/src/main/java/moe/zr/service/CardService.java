@@ -2,14 +2,15 @@ package moe.zr.service;
 
 
 import moe.zr.entry.Card;
-import moe.zr.vo.CardVO;
-import org.springframework.data.domain.Page;
+import org.bson.types.ObjectId;
 
 
 public interface CardService {
-    Page<Card> queryPageByCardVO(CardVO cardVO);
 
-    Card insertCard(Card card);
+    Card saveCard(Card card);
 
-    Long count();
+
+    Card queryCard(String id);
+
+
 }

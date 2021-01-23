@@ -1,60 +1,41 @@
 package moe.zr.esmwiki.producer.service.impl;
 
 import moe.zr.entry.Card;
-import moe.zr.vo.CardVO;
 import moe.zr.service.CardService;
 import org.apache.dubbo.config.annotation.DubboService;
 import org.bson.types.ObjectId;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.stereotype.Service;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.util.Optional;
 
 @DubboService(interfaceClass = CardService.class)
-@Path("card")
+@Path("/api/card")
 public class CardServiceImpl implements CardService {
-    final MongoRepository<Card, ObjectId> repository;
+    final MongoRepository<Card, String> repository;
 
-    public CardServiceImpl(MongoRepository<Card, ObjectId> repository) {
+    public CardServiceImpl(MongoRepository<Card, String> repository) {
         this.repository = repository;
     }
 
-    @Override
-    @Path("/count")
+    @PUT
+    @Consumes({MediaType.APPLICATION_JSON})
+    @Produces({MediaType.APPLICATION_JSON})
+    public Card saveCard(Card card) {
+        return repository.save(card);
+    }
+
     @GET
-    @Consumes({MediaType.APPLICATION_JSON})
-    public Long count() {
-        return repository.count();
-    }
-
-    /**
-     * fastjson就是个弱智玩意 不要用
-     */
-    @Path("/query")
-    @POST
-    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
+    @Consumes
     @Produces({MediaType.APPLICATION_JSON})
-    public Page<Card> queryPageByCardVO(CardVO cardVO) {
-        PageRequest pageRequest = CardVOUtils.parsePageRequest(cardVO);
-        Example<Card> of = Example.of(cardVO.getCard());
-        try {
-            return repository.findAll(of, pageRequest);
-        } catch (Exception e) {
-            throw new WebApplicationException(e.getMessage());
+    public Card queryCard(String id) {
+        Optional<Card> byId = repository.findById(id);
+        if (byId.isPresent()) {
+            return byId.get();
+        } else {
+            throw new WebApplicationException(Response.Status.NOT_FOUND);
         }
-    }
-
-
-    @Override
-    @Path("/insert")
-    @POST
-    @Consumes({MediaType.APPLICATION_JSON})
-    @Produces({MediaType.APPLICATION_JSON})
-    public Card insertCard(Card card) {
-        return repository.insert(card);
     }
 }

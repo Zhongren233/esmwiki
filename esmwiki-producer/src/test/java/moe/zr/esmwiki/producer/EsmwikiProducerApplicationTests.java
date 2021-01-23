@@ -9,16 +9,10 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 @SpringBootTest
 class EsmwikiProducerApplicationTests {
-    @Autowired
-    private MongoRepository<Card, ObjectId> repository;
 
     @Test
     void context() {
 
     }
 
-    @Test
-    void count() {
-        System.out.println(repository.count());
-    }
 }
