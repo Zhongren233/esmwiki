@@ -1,11 +1,11 @@
 package moe.zr.service;
 
 import moe.zr.entry.Card;
-import moe.zr.vo.CardVO;
-import org.springframework.data.domain.Page;
+import moe.zr.vo.Page;
+import moe.zr.vo.WebVO;
 
 public interface CardsService {
-    Page<Card> queryPageByCardVO(CardVO cardVO);
+    Page queryPageByCardVO(WebVO<Card> cardVO);
 
 
 }
