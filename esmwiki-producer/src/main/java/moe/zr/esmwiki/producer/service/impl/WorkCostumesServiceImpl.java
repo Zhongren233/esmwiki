@@ -27,7 +27,7 @@ public class WorkCostumesServiceImpl implements WorkCostumesService {
         this.template = template;
     }
 
-    @GET
+    @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
     @Produces({MediaType.APPLICATION_JSON})
     @Override

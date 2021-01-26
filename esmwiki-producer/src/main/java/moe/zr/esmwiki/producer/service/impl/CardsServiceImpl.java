@@ -13,10 +13,7 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 
-import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 
@@ -35,12 +32,13 @@ public class CardsServiceImpl implements CardsService {
 
     /**
      * fastjson就是个弱智玩意 不要用
+     * 操你妈 凭什么get不能带body
      */
-    @GET
+    @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
     @Produces({MediaType.APPLICATION_JSON})
     public Page queryPageByCardVO(WebVO<Card> cardVO) {
-        PageRequest pageRequest = WebVOUtils.parsePageRequest(cardVO,Card.class );
+        PageRequest pageRequest = WebVOUtils.parsePageRequest(cardVO, Card.class);
         Card data = cardVO.getData();
         Query query = new Query();
         query.fields().include("name",
