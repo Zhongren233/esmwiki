@@ -11,9 +11,9 @@ import lombok.experimental.Accessors;
 @Accessors
 @NoArgsConstructor
 public class WebVO<T> {
-    Integer page;
-    Integer size;
-    String sort;
-    T data;
+    private Integer page;
+    private Integer size;
+    private String sort;
+    private T data;
 
 }

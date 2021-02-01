@@ -9,7 +9,7 @@
     <version>1.0.2-SNAPSHOT</version>
     <modules>
         <module>esmwiki-common</module>
-        <module>esmwiki-producer</module>
+        <module>esmwiki-web</module>
     </modules>
     <packaging>pom</packaging>
     <properties>
@@ -32,11 +32,6 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-spring-boot-starter</artifactId>
-            <version>2.7.8</version>
         </dependency>
     </dependencies>
 
