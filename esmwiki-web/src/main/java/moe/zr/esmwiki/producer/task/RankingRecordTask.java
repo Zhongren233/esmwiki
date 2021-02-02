@@ -54,7 +54,9 @@ public class RankingRecordTask {
         ArrayList<RankingRecord> rankingRecords = new ArrayList<>();
         try {
             for (EventRankingNavigationType value : values) {
-                rankingRecords.add(getRecord(service.getRankingRecord(value)));
+                RankingRecord record = getRecord(service.getRankingRecord(value));
+                record.setRank(value.getRank());
+                rankingRecords.add(record);
             }
             System.out.println(rankingRecordRepository.insert(rankingRecords));
         } catch (IOException | BadPaddingException | IllegalBlockSizeException | ParseException e) {
