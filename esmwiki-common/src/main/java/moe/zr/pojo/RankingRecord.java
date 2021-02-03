@@ -13,7 +13,7 @@ import java.util.Date;
 public class RankingRecord {
     @Id
     private String id;
-    private Date currentTime;
+    private String currentTime;
     private Integer eventId;
     private Integer point;
     private Integer rank;

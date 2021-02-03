@@ -14,9 +14,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 @EnableScheduling
 @Configuration
@@ -25,21 +23,19 @@ public class RankingRecordTask {
     PointRankingService service;
     final
     RankingRecordRepository rankingRecordRepository;
-    final
-    SimpleDateFormat dateFormat;
+
 
     final static String cron = "0 */1 * * * ?";
 
-    public RankingRecordTask(PointRankingService service, RankingRecordRepository rankingRecordRepository, SimpleDateFormat dateFormat) {
+    public RankingRecordTask(PointRankingService service, RankingRecordRepository rankingRecordRepository) {
         this.service = service;
         this.rankingRecordRepository = rankingRecordRepository;
-        this.dateFormat = dateFormat;
     }
 
 
     private RankingRecord getRecord(JsonNode jsonNode) throws ParseException {
         String currentTime = jsonNode.get("current_time").textValue();
-        Date date = dateFormat.parse(currentTime);
+        String date = currentTime.substring(0, 16);
         JsonNode ranking = jsonNode.get("ranking");
         JsonNode x = ranking.get(0);
         int point = x.get("point").asInt();
