@@ -27,7 +27,7 @@ public class PointRankingServiceImpl implements PointRankingService {
     final
     RequestUtils utils;
 
-    public PointRankingServiceImpl(RequestUtils utils, EsmHttpClient httpClient, ObjectMapper mapper, SimpleDateFormat simpleDateFormat) {
+    public PointRankingServiceImpl(RequestUtils utils, EsmHttpClient httpClient, ObjectMapper mapper) {
         this.utils = utils;
         this.httpClient = httpClient;
         this.mapper = mapper;
