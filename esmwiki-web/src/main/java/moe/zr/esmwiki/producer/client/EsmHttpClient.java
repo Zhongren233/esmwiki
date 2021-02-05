@@ -1,9 +1,11 @@
 package moe.zr.esmwiki.producer.client;
 
 import moe.zr.esmwiki.producer.util.CryptoUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.msgpack.MessagePack;
 import org.msgpack.type.Value;
 import org.springframework.stereotype.Component;
@@ -13,21 +15,24 @@ import javax.crypto.IllegalBlockSizeException;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 @Component
 public class EsmHttpClient {
     final
-    CloseableHttpClient httpClient;
+    CloseableHttpAsyncClient httpClient;
 
-    public EsmHttpClient(CloseableHttpClient httpClient) {
-        this.httpClient = httpClient;
+    public EsmHttpClient(CloseableHttpAsyncClient client) {
+        this.httpClient = client;
     }
 
-    public Value execute(HttpPost post) throws IOException, BadPaddingException, IllegalBlockSizeException {
+    public Value execute(HttpPost post) throws IOException, BadPaddingException, IllegalBlockSizeException, ExecutionException, InterruptedException {
         byte[] tmp = new byte[30 * 1000];
-        CloseableHttpResponse execute = httpClient.execute(post);
-        int statusCode = execute.getStatusLine().getStatusCode();
-        BufferedInputStream bufferedInputStream = new BufferedInputStream(execute.getEntity().getContent());
+        Future<HttpResponse> execute = httpClient.execute(post, null);
+        HttpResponse httpResponse = execute.get();
+        int statusCode = httpResponse.getStatusLine().getStatusCode();
+        BufferedInputStream bufferedInputStream = new BufferedInputStream(httpResponse.getEntity().getContent());
         int read = bufferedInputStream.read(tmp);
         tmp = Arrays.copyOf(tmp, read);
         Value value = new MessagePack().read(CryptoUtils.decrypt(tmp));
@@ -37,7 +42,7 @@ public class EsmHttpClient {
         /*
             close!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          */
-        execute.close();
+        bufferedInputStream.close();
         return value;
     }
 

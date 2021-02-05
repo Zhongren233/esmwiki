@@ -1,15 +1,17 @@
 package moe.zr.esmwiki.producer.config;
 
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class HTTPClientConfig {
     @Bean
-    public CloseableHttpClient closeableHttpClient() {
-        return HttpClientBuilder.create().build();
+    public CloseableHttpAsyncClient closeableHttpClient() {
+        CloseableHttpAsyncClient aDefault = HttpAsyncClients.createDefault();
+        aDefault.start();
+        return aDefault;
     }
 
 }
