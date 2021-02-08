@@ -3,8 +3,6 @@ package moe.zr.esmwiki.producer.task;
 import moe.zr.esmwiki.producer.repository.RankingRecordRepository;
 import moe.zr.service.PointRankingService;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;

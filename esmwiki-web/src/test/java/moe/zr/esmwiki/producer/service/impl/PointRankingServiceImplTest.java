@@ -1,7 +1,13 @@
 package moe.zr.esmwiki.producer.service.impl;
 
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import moe.zr.entry.hekk.EventPointRanking;
+import moe.zr.entry.hekk.Ranking;
 import moe.zr.enums.EventRankingNavigationType;
+import moe.zr.esmwiki.producer.repository.RankingRepository;
 import moe.zr.pojo.RankingRecord;
 import moe.zr.service.PointRankingService;
 import org.junit.jupiter.api.Test;
@@ -19,11 +25,17 @@ import java.util.concurrent.ExecutionException;
 class PointRankingServiceImplTest {
     @Autowired
     PointRankingService service;
+    @Autowired
+    ObjectMapper mapper;
+    @Autowired
+    RankingRepository rankingRepository;
+
     @Test
     public void testRecord() throws IllegalBlockSizeException, ParseException, BadPaddingException, IOException, ExecutionException, InterruptedException {
         JsonNode rankingRecord = service.getRankingRecord(EventRankingNavigationType.R1000);
         System.out.println(rankingRecord);
     }
+
     @Test
     void testRecords() throws IllegalBlockSizeException, ParseException, BadPaddingException, IOException, ExecutionException, InterruptedException {
         long l = System.currentTimeMillis();
@@ -31,4 +43,21 @@ class PointRankingServiceImplTest {
         rankingRecords.forEach(System.out::println);
         System.out.println(System.currentTimeMillis() - l);
     }
+
+//    @Test
+//    void testAllRecords() throws BadPaddingException, InterruptedException, ParseException, IOException, ExecutionException, IllegalBlockSizeException {
+//        int currentPage = 1;
+//        int totalPage;
+//        do {
+//            mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+//            JsonNode rankingRecord = service.getRankingRecord(currentPage);
+//            totalPage = rankingRecord.get("total_pages").asInt();
+//            JsonNode ranking = rankingRecord.get("ranking");
+//            JavaType javaType = mapper.getTypeFactory().constructParametricType(List.class, Ranking.class);
+//            List<Ranking> rankingList = mapper.readValue(ranking.toString(), javaType);
+//            System.out.println(rankingList);
+//            rankingRepository.insert(rankingList);
+//            currentPage++;
+//        } while (currentPage <= totalPage);
+//    }
 }

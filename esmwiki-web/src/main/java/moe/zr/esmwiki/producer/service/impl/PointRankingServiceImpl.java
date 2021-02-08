@@ -55,11 +55,16 @@ public class PointRankingServiceImpl implements PointRankingService, IMessageQui
     }
 
     @Override
-    public List<RankingRecord> getRankingRecords() throws BadPaddingException, IOException, IllegalBlockSizeException,  ExecutionException, InterruptedException {
+    public List<RankingRecord> getRankingRecords() throws BadPaddingException, IOException, IllegalBlockSizeException, ExecutionException, InterruptedException {
         ArrayList<RankingRecord> rankingRecords = new ArrayList<>();
         for (EventRankingNavigationType value : EventRankingNavigationType.values()) {
             JsonNode node = getRankingRecord(value);
-            RankingRecord record = ParseUtils.getRecord(node);
+            RankingRecord record = ParseUtils.getRecord(node, 0);
+            if (value == EventRankingNavigationType.R1) {
+                RankingRecord r10 = ParseUtils.getRecord(node, 9);
+                r10.setRank(10);
+                rankingRecords.add(r10);
+            }
             record.setRank(value.getRank());
             rankingRecords.add(record);
         }
