@@ -2,12 +2,10 @@ package moe.zr.entry.hekk;
 
 import lombok.Data;
 
-import java.io.Serializable;
 import java.util.List;
-
 @Data
-public class EventPointRanking implements Serializable {
-    private static final long serialVersionUID = 5559780281018323108L;
+public class EventSongRanking {
+    private static final long serialVersionUID = 2956966050937498082L;
     private Integer eventId;
     private Integer pointRank;
     private Integer eventAssistMultiplyState;

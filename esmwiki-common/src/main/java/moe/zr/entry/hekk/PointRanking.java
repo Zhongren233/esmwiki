@@ -5,8 +5,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
-@Document("ranking")
-public class Ranking {
+@Document("pointRanking")
+public class PointRanking {
     @Id
     private String id;
     private UserProfile userProfile;

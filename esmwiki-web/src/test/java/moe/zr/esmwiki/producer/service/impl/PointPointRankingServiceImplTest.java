@@ -1,11 +1,7 @@
 package moe.zr.esmwiki.producer.service.impl;
 
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import moe.zr.entry.hekk.EventPointRanking;
-import moe.zr.entry.hekk.Ranking;
 import moe.zr.enums.EventRankingNavigationType;
 import moe.zr.esmwiki.producer.repository.RankingRepository;
 import moe.zr.pojo.RankingRecord;
@@ -22,7 +18,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 @SpringBootTest
-class PointRankingServiceImplTest {
+class PointPointRankingServiceImplTest {
     @Autowired
     PointRankingService service;
     @Autowired
