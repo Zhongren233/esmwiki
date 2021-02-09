@@ -1,11 +1,9 @@
 package moe.zr.esmwiki.producer.repository;
 
-import moe.zr.entry.hekk.PointRanking;
+import moe.zr.pojo.PointRankingRecord;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
-
 @Repository
-public interface RankingRepository extends MongoRepository<PointRanking, String> {
-
+public interface PointRankingRecordRepository extends MongoRepository<PointRankingRecord, String> {
 }

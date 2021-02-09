@@ -1,4 +1,4 @@
-package moe.zr.esmwiki.producer.repository;
+package moe.zr.esmwiki.producer.task;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -6,8 +6,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
-class CardRepositoryTest {
+class PointPointRankingRecordTaskTest {
+
+    @Autowired
+    RankingRecordTask task;
     @Test
-    void findNames() {
+    void recordRank() {
     }
 }

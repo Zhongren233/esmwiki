@@ -6,7 +6,9 @@ import moe.zr.enums.EventRankingNavigationType;
 import moe.zr.esmwiki.producer.client.EsmHttpClient;
 import moe.zr.esmwiki.producer.util.ParseUtils;
 import moe.zr.esmwiki.producer.util.RequestUtils;
+import moe.zr.pojo.PointRankingRecord;
 import moe.zr.pojo.RankingRecord;
+import moe.zr.pojo.SongRankingRecord;
 import moe.zr.qqbot.entry.IMessageQuickReply;
 import moe.zr.service.SongRankingService;
 import org.apache.http.client.methods.HttpPost;
@@ -20,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+
 @Service
 public class SongRankingServiceImpl implements SongRankingService, IMessageQuickReply {
     private final String uri = "https://saki-server.happyelements.cn/get/events/score_ranking";
@@ -53,22 +56,22 @@ public class SongRankingServiceImpl implements SongRankingService, IMessageQuick
 
     @Override
     public List<RankingRecord> getSongRankingRecords() throws BadPaddingException, IOException, IllegalBlockSizeException, ExecutionException, InterruptedException {
-        ArrayList<RankingRecord> rankingRecords = new ArrayList<>();
+        ArrayList<RankingRecord> pointRankingRecords = new ArrayList<>();
         for (EventRankingNavigationType value : EventRankingNavigationType.values()) {
             JsonNode node = getSongRankingRecord(value);
-            bathParseRanking(rankingRecords, value, node);
+            bathParseRanking(pointRankingRecords, value, node);
         }
-        return rankingRecords;
+        return pointRankingRecords;
     }
 
-    static void bathParseRanking(ArrayList<RankingRecord> rankingRecords, EventRankingNavigationType value, JsonNode node) {
+    static void bathParseRanking(ArrayList<RankingRecord> songRankingRecords, EventRankingNavigationType value, JsonNode node) {
         RankingRecord record = ParseUtils.getRecord(node, 0);
         record.setRank(value.getRank());
-        rankingRecords.add(record);
+        songRankingRecords.add(record);
         if (value == EventRankingNavigationType.R1) {
             RankingRecord r10 = ParseUtils.getRecord(node, 9);
             r10.setRank(10);
-            rankingRecords.add(r10);
+            songRankingRecords.add(r10);
         }
     }
 
@@ -84,18 +87,18 @@ public class SongRankingServiceImpl implements SongRankingService, IMessageQuick
     public String onMessage(String[] str) {
         try {
             StringBuilder stringBuilder = new StringBuilder();
-            List<RankingRecord> rankingRecords = getSongRankingRecords();
-            return getString(stringBuilder, rankingRecords);
+            List<RankingRecord> pointRankingRecords = getSongRankingRecords();
+            return getString(stringBuilder, pointRankingRecords);
         } catch (Exception e) {
             e.printStackTrace();
             return "为什么会这样呢";
         }
     }
 
-    static String getString(StringBuilder stringBuilder, List<RankingRecord> rankingRecords) {
+    static String getString(StringBuilder stringBuilder, List<? extends RankingRecord> songRankingRecords) {
         stringBuilder.append(new Date());
-        stringBuilder.append("的活动积分榜\n");
-        for (RankingRecord rankingRecord : rankingRecords) {
+        stringBuilder.append("的活动榜\n");
+        for (RankingRecord rankingRecord : songRankingRecords) {
             stringBuilder.append("rank");
             stringBuilder.append(rankingRecord.getRank());
             stringBuilder.append(" = ");

@@ -1,12 +1,8 @@
 package moe.zr.esmwiki.producer.service.impl;
 
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import moe.zr.entry.hekk.ScoreRanking;
 import moe.zr.esmwiki.producer.repository.ScoreRankingRepository;
-import moe.zr.pojo.RankingRecord;
+import moe.zr.pojo.PointRankingRecord;
 import moe.zr.service.SongRankingService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,24 +26,23 @@ class SongPointRankingServiceImplTest {
 
     @Test
     void getSongRankingRecords() throws BadPaddingException, InterruptedException, ParseException, IOException, ExecutionException, IllegalBlockSizeException {
-        List<RankingRecord> songRankingRecords = service.getSongRankingRecords();
-        songRankingRecords.forEach(System.out::println);
+        service.getSongRankingRecords().forEach(System.out::println);
     }
 
-    @Test
-    void testAllRecords() throws BadPaddingException, InterruptedException, ParseException, IOException, ExecutionException, IllegalBlockSizeException {
-        int currentPage = 1;
-        int totalPage;
-        do {
-            mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
-            JsonNode rankingRecord = service.getSongRankingRecord(currentPage);
-            totalPage = rankingRecord.get("total_pages").asInt();
-            JsonNode ranking = rankingRecord.get("ranking");
-            JavaType javaType = mapper.getTypeFactory().constructParametricType(List.class, ScoreRanking.class);
-            List<ScoreRanking> rankingList = mapper.readValue(ranking.toString(), javaType);
-            System.out.println(rankingList);
-            rankingRepository.insert(rankingList);
-            currentPage++;
-        } while (currentPage <= totalPage);
-    }
+//    @Test
+//    void testAllRecords() throws BadPaddingException, InterruptedException, ParseException, IOException, ExecutionException, IllegalBlockSizeException {
+//        int currentPage = 1;
+//        int totalPage;
+//        do {
+//            mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+//            JsonNode rankingRecord = service.getSongRankingRecord(currentPage);
+//            totalPage = rankingRecord.get("total_pages").asInt();
+//            JsonNode ranking = rankingRecord.get("ranking");
+//            JavaType javaType = mapper.getTypeFactory().constructParametricType(List.class, ScoreRanking.class);
+//            List<ScoreRanking> rankingList = mapper.readValue(ranking.toString(), javaType);
+//            System.out.println(rankingList);
+//            rankingRepository.insert(rankingList);
+//            currentPage++;
+//        } while (currentPage <= totalPage);
+//    }
 }

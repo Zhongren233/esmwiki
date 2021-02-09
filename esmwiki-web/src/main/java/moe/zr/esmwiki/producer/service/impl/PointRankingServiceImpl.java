@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import moe.zr.enums.EventRankingNavigationType;
 import moe.zr.esmwiki.producer.client.EsmHttpClient;
 import moe.zr.esmwiki.producer.util.RequestUtils;
+import moe.zr.pojo.PointRankingRecord;
 import moe.zr.pojo.RankingRecord;
 import moe.zr.qqbot.entry.IMessageQuickReply;
 import moe.zr.service.PointRankingService;
@@ -53,12 +54,12 @@ public class PointRankingServiceImpl implements PointRankingService, IMessageQui
 
     @Override
     public List<RankingRecord> getRankingRecords() throws BadPaddingException, IOException, IllegalBlockSizeException, ExecutionException, InterruptedException {
-        ArrayList<RankingRecord> rankingRecords = new ArrayList<>();
+        ArrayList<RankingRecord> pointRankingRecords = new ArrayList<>();
         for (EventRankingNavigationType value : EventRankingNavigationType.values()) {
             JsonNode node = getRankingRecord(value);
-            SongRankingServiceImpl.bathParseRanking(rankingRecords, value, node);
+            SongRankingServiceImpl.bathParseRanking(pointRankingRecords, value, node);
         }
-        return rankingRecords;
+        return pointRankingRecords;
     }
 
     private String initContent(int page) {
@@ -73,8 +74,8 @@ public class PointRankingServiceImpl implements PointRankingService, IMessageQui
     public String onMessage(String[] str) {
         try {
             StringBuilder stringBuilder = new StringBuilder();
-            List<RankingRecord> rankingRecords = getRankingRecords();
-            return getString(stringBuilder, rankingRecords);
+            List<RankingRecord> pointRankingRecords = getRankingRecords();
+            return getString(stringBuilder, pointRankingRecords);
         } catch (Exception e) {
             e.printStackTrace();
             return "为什么会这样呢";
