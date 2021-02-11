@@ -19,7 +19,7 @@ public class WorkCostumesController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public Page getCards(@RequestBody WorkCostumeVO workCostumeVO){
+    public Page getCards(@RequestBody WorkCostumeVO workCostumeVO) {
         System.out.println(workCostumeVO);
         return service.queryPageByCardVO(workCostumeVO);
     }

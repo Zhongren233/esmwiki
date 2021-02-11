@@ -3,6 +3,7 @@ package moe.zr.entry.hekk;
 import lombok.Data;
 
 import java.util.List;
+
 @Data
 public class EventSongRanking {
     private static final long serialVersionUID = 2956966050937498082L;

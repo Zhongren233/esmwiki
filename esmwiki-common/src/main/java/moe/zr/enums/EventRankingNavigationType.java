@@ -15,7 +15,7 @@ public enum EventRankingNavigationType {
     }
 
 
-    public int getRank(){
+    public int getRank() {
         return rank;
     }
 }

@@ -22,7 +22,7 @@ public class WorkCostumesServiceImpl implements WorkCostumesService {
     }
 
     public moe.zr.vo.Page queryPageByCardVO(WorkCostumeVO workCostumeVo) {
-        PageRequest pageRequest = WebVOUtils.parsePageRequest(workCostumeVo,WorkCostume.class);
+        PageRequest pageRequest = WebVOUtils.parsePageRequest(workCostumeVo, WorkCostume.class);
         WorkCostume data = workCostumeVo.getData();
         Query query = new Query();
         if (data != null) {
@@ -30,7 +30,7 @@ public class WorkCostumesServiceImpl implements WorkCostumesService {
             query.addCriteria(criteria);
         }
         List<String> select = workCostumeVo.getSelect();
-        if (select != null ) {
+        if (select != null) {
             if (select.size() > 3)
                 throw new IllegalArgumentException();
             else

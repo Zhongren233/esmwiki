@@ -21,7 +21,7 @@ public class CardsController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public Page getCards(@RequestBody WebVO<Card> cardVo){
+    public Page getCards(@RequestBody WebVO<Card> cardVo) {
         System.out.println(cardVo);
         return service.queryPageByCardVO(cardVo);
     }

@@ -15,7 +15,6 @@ public class EventServiceImpl implements IMessageQuickReply {
     }
 
 
-
     @Override
     public String onMessage(String[] str) {
         return null;

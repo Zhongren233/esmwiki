@@ -26,7 +26,7 @@ public class WorkCostumeServiceImpl implements WorkCostumeService {
         if (id == null) throw new IllegalArgumentException();
 
         Optional<WorkCostume> byId = repository.findById(id);
-        if (byId.isPresent())  return byId.get();
+        if (byId.isPresent()) return byId.get();
 
         else throw new NoSuchElementException();
 

@@ -9,7 +9,7 @@ import org.springframework.data.domain.Sort;
 import java.util.List;
 
 public class WebVOUtils {
-    public static PageRequest parsePageRequest(WebVO<?> webVO,Class<?> c) {
+    public static PageRequest parsePageRequest(WebVO<?> webVO, Class<?> c) {
         if (webVO.getPage() == null) webVO.setPage(1);
         if (webVO.getSize() == null) webVO.setSize(20);
 
