@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import moe.zr.esmwiki.producer.repository.PointRankingRecordRepository;
 import moe.zr.esmwiki.producer.repository.ScoreRankingRecordRepository;
 import moe.zr.pojo.PointRankingRecord;
+import moe.zr.pojo.RankingRecord;
 import moe.zr.pojo.SongRankingRecord;
 import moe.zr.qqbot.entry.IMessageQuickReply;
 import moe.zr.service.PointRankingService;
@@ -18,10 +19,7 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 
 @EnableScheduling
@@ -53,9 +51,11 @@ public class RankingRecordTask implements IMessageQuickReply {
         if (flag) {
             try {
                 ArrayList<PointRankingRecord> pointRankingRecords = new ArrayList<>();
-                pointRankingService.getRankingRecords().forEach(
+                List<RankingRecord> rankingRecords = pointRankingService.getRankingRecords();
+                rankingRecords.forEach(
                         a -> pointRankingRecords.add(new PointRankingRecord(a))
                 );
+                pointRankingRecordRepository.insert(pointRankingRecords);
                 log.debug("成功获取");
             } catch (IOException | BadPaddingException | IllegalBlockSizeException | ParseException | ExecutionException | InterruptedException | RuntimeException e) {
                 e.printStackTrace();
@@ -72,6 +72,7 @@ public class RankingRecordTask implements IMessageQuickReply {
                 songRankingService.getSongRankingRecords().forEach(
                         a -> songRankingRecords.add(new SongRankingRecord(a))
                 );
+                scoreRankingRecordRepository.insert(songRankingRecords);
                 log.debug("成功获取");
             } catch (IOException | BadPaddingException | IllegalBlockSizeException | ParseException | ExecutionException | InterruptedException | RuntimeException e) {
                 e.printStackTrace();
