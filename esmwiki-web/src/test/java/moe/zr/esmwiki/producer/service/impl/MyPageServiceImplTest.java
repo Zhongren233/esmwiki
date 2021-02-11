@@ -18,6 +18,6 @@ class MyPageServiceImplTest {
 
     @Test
     void getMyPage() throws IllegalBlockSizeException, ExecutionException, InterruptedException, BadPaddingException {
-    service.getMyPage();
+        service.getMyPage();
     }
 }
