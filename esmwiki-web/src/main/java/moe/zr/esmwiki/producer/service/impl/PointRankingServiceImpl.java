@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import moe.zr.enums.EventRankingNavigationType;
 import moe.zr.esmwiki.producer.client.EsmHttpClient;
 import moe.zr.esmwiki.producer.util.RequestUtils;
-import moe.zr.pojo.PointRankingRecord;
 import moe.zr.pojo.RankingRecord;
 import moe.zr.qqbot.entry.IMessageQuickReply;
 import moe.zr.service.PointRankingService;

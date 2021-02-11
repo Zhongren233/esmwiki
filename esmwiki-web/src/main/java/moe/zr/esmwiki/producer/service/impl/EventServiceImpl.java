@@ -2,7 +2,6 @@ package moe.zr.esmwiki.producer.service.impl;
 
 import moe.zr.esmwiki.producer.client.EsmHttpClient;
 import moe.zr.qqbot.entry.IMessageQuickReply;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service

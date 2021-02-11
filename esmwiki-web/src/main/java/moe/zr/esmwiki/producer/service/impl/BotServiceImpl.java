@@ -7,7 +7,6 @@ import moe.zr.qqbot.entry.IMessageQuickReply;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 

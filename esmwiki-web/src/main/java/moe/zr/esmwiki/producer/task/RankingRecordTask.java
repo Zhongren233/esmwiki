@@ -1,9 +1,9 @@
 package moe.zr.esmwiki.producer.task;
 
+import lombok.extern.slf4j.Slf4j;
 import moe.zr.esmwiki.producer.repository.PointRankingRecordRepository;
 import moe.zr.esmwiki.producer.repository.ScoreRankingRecordRepository;
 import moe.zr.pojo.PointRankingRecord;
-import moe.zr.pojo.RankingRecord;
 import moe.zr.pojo.SongRankingRecord;
 import moe.zr.qqbot.entry.IMessageQuickReply;
 import moe.zr.service.PointRankingService;
@@ -15,13 +15,18 @@ import org.springframework.scheduling.annotation.Scheduled;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import java.io.IOException;
+import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.List;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
 
 @EnableScheduling
 @Configuration
+@Slf4j
 public class RankingRecordTask implements IMessageQuickReply {
     final
     PointRankingService pointRankingService;
@@ -51,7 +56,7 @@ public class RankingRecordTask implements IMessageQuickReply {
                 pointRankingService.getRankingRecords().forEach(
                         a -> pointRankingRecords.add(new PointRankingRecord(a))
                 );
-                System.out.println(pointRankingRecordRepository.insert(pointRankingRecords));
+                log.debug("成功获取");
             } catch (IOException | BadPaddingException | IllegalBlockSizeException | ParseException | ExecutionException | InterruptedException | RuntimeException e) {
                 e.printStackTrace();
                 flag = false;
@@ -67,7 +72,7 @@ public class RankingRecordTask implements IMessageQuickReply {
                 songRankingService.getSongRankingRecords().forEach(
                         a -> songRankingRecords.add(new SongRankingRecord(a))
                 );
-                System.out.println(scoreRankingRecordRepository.insert(songRankingRecords));
+                log.debug("成功获取");
             } catch (IOException | BadPaddingException | IllegalBlockSizeException | ParseException | ExecutionException | InterruptedException | RuntimeException e) {
                 e.printStackTrace();
                 flag = false;
@@ -75,20 +80,45 @@ public class RankingRecordTask implements IMessageQuickReply {
         }
     }
 
+    private final Timer timer = new Timer();
+    private Date scheduled = null;
 
     @Override
     public String onMessage(String[] str) {
-        System.out.println(flag);
-        switch (str[1]) {
-            case "status":
-                return String.valueOf(flag);
-            case "on":
-                flag = true;
-            case "off":
-                flag = false;
-            default:
-                return String.valueOf(flag);
+        if (str.length >= 2) {
+            switch (str[1]) {
+                case "status":
+                    String s = "正在运行:" + flag;
+                    if (scheduled != null) {
+                        s += "\n即将运行:";
+                        s += DateFormat.getDateTimeInstance().format(scheduled);
+                    }
+                    return s;
+                case "set":
+                    if (scheduled != null) {
+                        return "已有任务:" + DateFormat.getDateTimeInstance().format(scheduled);
+                    }
+                    if (str.length == 2) {
+                        return "没有参数";
+                    }
+                    try {
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyMMdd-hhmm");
+                        scheduled = simpleDateFormat.parse(str[2]);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                        return "格式不正确 yyMMdd-hhmm";
+                    }
+                    timer.schedule(new TimerTask() {
+                        @Override
+                        public void run() {
+                            scheduled = null;
+                            flag = true;
+                        }
+                    }, scheduled);
+                    return DateFormat.getDateTimeInstance().format(scheduled);
+            }
         }
+        return "/task {status} {set}";
     }
 
     @Override

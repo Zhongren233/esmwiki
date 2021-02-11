@@ -2,9 +2,7 @@ package moe.zr.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import moe.zr.enums.EventRankingNavigationType;
-import moe.zr.pojo.PointRankingRecord;
 import moe.zr.pojo.RankingRecord;
-import moe.zr.pojo.SongRankingRecord;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;

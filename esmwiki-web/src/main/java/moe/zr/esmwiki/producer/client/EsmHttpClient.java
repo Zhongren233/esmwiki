@@ -1,9 +1,7 @@
 package moe.zr.esmwiki.producer.client;
 
 import moe.zr.esmwiki.producer.util.CryptoUtils;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.msgpack.MessagePack;
@@ -36,7 +34,7 @@ public class EsmHttpClient {
         int read = bufferedInputStream.read(tmp);
         tmp = Arrays.copyOf(tmp, read);
         Value value = new MessagePack().read(CryptoUtils.decrypt(tmp));
-        if (statusCode!=200) {
+        if (statusCode != 200) {
             throw new RuntimeException(value.toString());
         }
         /*
@@ -46,4 +44,11 @@ public class EsmHttpClient {
         return value;
     }
 
+    public void executeNoResponse(HttpPost post) throws ExecutionException, InterruptedException {
+        Future<HttpResponse> execute = httpClient.execute(post, null);
+        HttpResponse httpResponse = execute.get();
+        if (httpResponse.getStatusLine().getStatusCode() != 200) {
+            throw new RuntimeException("状态码不为200");
+        }
+    }
 }
