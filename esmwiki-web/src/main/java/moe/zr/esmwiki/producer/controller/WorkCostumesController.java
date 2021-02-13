@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/workCostumes")
+@RequestMapping("/api/work/costumes")
 public class WorkCostumesController {
     final
     WorkCostumesService service;
