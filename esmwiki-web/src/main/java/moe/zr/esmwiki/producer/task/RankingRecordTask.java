@@ -103,8 +103,10 @@ public class RankingRecordTask implements IMessageQuickReply {
                         return "没有参数";
                     }
                     try {
-                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyMMdd-hhmm");
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd");
                         scheduled = simpleDateFormat.parse(str[2]);
+                        scheduled.setHours(12);
+                        log.info("成功获取到时间:{}", scheduled);
                     } catch (ParseException e) {
                         e.printStackTrace();
                         return "格式不正确 yyMMdd-hhmm";
@@ -117,6 +119,8 @@ public class RankingRecordTask implements IMessageQuickReply {
                         }
                     }, scheduled);
                     return DateFormat.getDateTimeInstance().format(scheduled);
+                case "now":
+                    return DateFormat.getDateTimeInstance().format(new Date());
             }
         }
         return "/task {status} {set}";

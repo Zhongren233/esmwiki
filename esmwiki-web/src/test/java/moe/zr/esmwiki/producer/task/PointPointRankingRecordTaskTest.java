@@ -12,5 +12,6 @@ class PointPointRankingRecordTaskTest {
     RankingRecordTask task;
     @Test
     void recordRank() {
+        System.out.println(task.onMessage("/task now".split(" ")));
     }
 }

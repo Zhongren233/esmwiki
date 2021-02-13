@@ -31,7 +31,6 @@ public class BotServiceImpl {
         IMessageQuickReply iMessageQuickReply = messageHandlerMap.get(command[0]);
         if (iMessageQuickReply == null) return null;
 
-        return mapper.createObjectNode().put("reply", iMessageQuickReply.onMessage(command))
-                .put("at_sender", true);
+        return mapper.createObjectNode().put("reply", iMessageQuickReply.onMessage(command));
     }
 }
