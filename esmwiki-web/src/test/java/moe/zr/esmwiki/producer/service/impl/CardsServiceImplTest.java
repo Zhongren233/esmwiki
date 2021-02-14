@@ -18,6 +18,5 @@ class CardsServiceImplTest {
         cardVO.setPage(1);
         cardVO.setSize(20);
         Page page = cardsService.queryPageByCardVO(cardVO);
-
     }
 }
