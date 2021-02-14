@@ -65,6 +65,7 @@ public class BotServiceImpl {
         try {
             httpClient.executeNoResponse(post);
         } catch (ExecutionException | InterruptedException e) {
+            log.error("发送信息出错",e);
             e.printStackTrace();
         }
     }

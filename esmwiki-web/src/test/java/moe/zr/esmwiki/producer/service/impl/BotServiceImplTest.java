@@ -14,6 +14,6 @@ class BotServiceImplTest {
 
     @Test
     void sendMessage() {
-        botService.sendMessage(new SendMessage().setMessage("测试发送信息").setGroupId(773891409));
+        botService.sendMessage(new SendMessage().setMessage("测试发送信息 test message").setGroupId(773891409));
     }
 }
