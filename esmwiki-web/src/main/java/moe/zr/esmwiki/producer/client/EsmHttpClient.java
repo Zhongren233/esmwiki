@@ -11,7 +11,9 @@ import org.springframework.stereotype.Component;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -25,7 +27,7 @@ public class EsmHttpClient {
         this.httpClient = client;
     }
 
-    public Value execute(HttpPost post) throws IOException, BadPaddingException, IllegalBlockSizeException, ExecutionException, InterruptedException {
+    public Value executeAsMessagepack(HttpPost post) throws IOException, BadPaddingException, IllegalBlockSizeException, ExecutionException, InterruptedException {
         byte[] tmp = new byte[30 * 1000];
         Future<HttpResponse> execute = httpClient.execute(post, null);
         HttpResponse httpResponse = execute.get();

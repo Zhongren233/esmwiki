@@ -3,12 +3,15 @@ package moe.zr.esmwiki.producer.task;
 import lombok.extern.slf4j.Slf4j;
 import moe.zr.esmwiki.producer.repository.PointRankingRecordRepository;
 import moe.zr.esmwiki.producer.repository.ScoreRankingRecordRepository;
+import moe.zr.esmwiki.producer.service.impl.BotServiceImpl;
 import moe.zr.pojo.PointRankingRecord;
 import moe.zr.pojo.RankingRecord;
 import moe.zr.pojo.SongRankingRecord;
 import moe.zr.qqbot.entry.IMessageQuickReply;
+import moe.zr.qqbot.entry.SendMessage;
 import moe.zr.service.PointRankingService;
 import moe.zr.service.SongRankingService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -34,16 +37,21 @@ public class RankingRecordTask implements IMessageQuickReply {
     ScoreRankingRecordRepository scoreRankingRecordRepository;
     final
     SongRankingService songRankingService;
+    final
+    BotServiceImpl botService;
     private boolean flag = true;
 
 
     final static String cron = "0 */1 * * * ?";
+    private DateFormat dateTimeInstance = DateFormat.getDateTimeInstance();
 
-    public RankingRecordTask(PointRankingService pointRankingService, PointRankingRecordRepository pointRankingRecordRepository, ScoreRankingRecordRepository scoreRankingRecordRepository, SongRankingService songRankingService) {
+
+    public RankingRecordTask(PointRankingService pointRankingService, PointRankingRecordRepository pointRankingRecordRepository, ScoreRankingRecordRepository scoreRankingRecordRepository, SongRankingService songRankingService, BotServiceImpl botService) {
         this.pointRankingService = pointRankingService;
         this.pointRankingRecordRepository = pointRankingRecordRepository;
         this.scoreRankingRecordRepository = scoreRankingRecordRepository;
         this.songRankingService = songRankingService;
+        this.botService = botService;
     }
 
     @Scheduled(cron = cron)
@@ -59,6 +67,8 @@ public class RankingRecordTask implements IMessageQuickReply {
                 log.debug("成功获取");
             } catch (IOException | BadPaddingException | IllegalBlockSizeException | ParseException | ExecutionException | InterruptedException | RuntimeException e) {
                 e.printStackTrace();
+                log.error("", e);
+                botService.sendMessage(new SendMessage().setMessage(e.getMessage()));
                 flag = false;
             }
         }
@@ -76,6 +86,8 @@ public class RankingRecordTask implements IMessageQuickReply {
                 log.debug("成功获取");
             } catch (IOException | BadPaddingException | IllegalBlockSizeException | ParseException | ExecutionException | InterruptedException | RuntimeException e) {
                 e.printStackTrace();
+                log.error("", e);
+                botService.sendMessage(new SendMessage().setMessage(e.getMessage()));
                 flag = false;
             }
         }
@@ -97,19 +109,18 @@ public class RankingRecordTask implements IMessageQuickReply {
                     return s;
                 case "set":
                     if (scheduled != null) {
-                        return "已有任务:" + DateFormat.getDateTimeInstance().format(scheduled);
+                        return "已有任务:" + dateTimeInstance.format(scheduled);
                     }
                     if (str.length == 2) {
                         return "没有参数";
                     }
                     try {
-                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd");
+                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd HH:mm");
                         scheduled = simpleDateFormat.parse(str[2]);
-                        scheduled.setHours(12);
                         log.info("成功获取到时间:{}", scheduled);
                     } catch (ParseException e) {
                         e.printStackTrace();
-                        return "格式不正确 yyMMdd-hhmm";
+                        return "格式不正确 yyyyMMdd HH:mm";
                     }
                     timer.schedule(new TimerTask() {
                         @Override
@@ -121,6 +132,8 @@ public class RankingRecordTask implements IMessageQuickReply {
                     return DateFormat.getDateTimeInstance().format(scheduled);
                 case "now":
                     return DateFormat.getDateTimeInstance().format(new Date());
+                case "on":
+                    this.flag = true;
             }
         }
         return "/task {status} {set}";

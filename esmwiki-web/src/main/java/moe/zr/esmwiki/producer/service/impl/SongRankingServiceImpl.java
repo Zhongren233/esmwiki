@@ -41,14 +41,24 @@ public class SongRankingServiceImpl implements SongRankingService, IMessageQuick
     @Override
     public JsonNode getSongRankingRecord(Integer page) throws IOException, BadPaddingException, IllegalBlockSizeException, ExecutionException, InterruptedException {
         HttpPost httpPost = utils.buildHttpRequest(uri, initContent(page));
-        Value execute = httpClient.execute(httpPost);
+        Value execute;
+        try {
+            execute = httpClient.executeAsMessagepack(httpPost);
+        } catch (ExecutionException e) {
+            execute = httpClient.executeAsMessagepack(httpPost);
+        }
         return mapper.readTree(execute.toString());
     }
 
     @Override
-    public JsonNode getSongRankingRecord(EventRankingNavigationType type) throws IOException, BadPaddingException, IllegalBlockSizeException, ExecutionException, InterruptedException {
+    public JsonNode getSongRankingRecord(EventRankingNavigationType type) throws IOException, BadPaddingException, IllegalBlockSizeException, InterruptedException, ExecutionException {
         HttpPost httpPost = utils.buildHttpRequest(uri, initContent(type));
-        Value execute = httpClient.execute(httpPost);
+        Value execute;
+        try {
+            execute = httpClient.executeAsMessagepack(httpPost);
+        } catch (ExecutionException e) {
+            execute = httpClient.executeAsMessagepack(httpPost);
+        }
         return mapper.readTree(execute.toString());
     }
 

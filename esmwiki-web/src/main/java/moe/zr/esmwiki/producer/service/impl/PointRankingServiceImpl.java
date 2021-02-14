@@ -41,13 +41,13 @@ public class PointRankingServiceImpl implements PointRankingService, IMessageQui
 
     public JsonNode getRankingRecord(Integer page) throws IOException, BadPaddingException, IllegalBlockSizeException, ExecutionException, InterruptedException {
         HttpPost httpPost = utils.buildHttpRequest(uri, initContent(page));
-        Value execute = httpClient.execute(httpPost);
+        Value execute = httpClient.executeAsMessagepack(httpPost);
         return mapper.readTree(execute.toString());
     }
 
     public JsonNode getRankingRecord(EventRankingNavigationType type) throws IOException, BadPaddingException, IllegalBlockSizeException, ExecutionException, InterruptedException {
         HttpPost httpPost = utils.buildHttpRequest(uri, initContent(type));
-        Value execute = httpClient.execute(httpPost);
+        Value execute = httpClient.executeAsMessagepack(httpPost);
         return mapper.readTree(execute.toString());
     }
 
