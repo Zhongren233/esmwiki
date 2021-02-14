@@ -16,6 +16,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -55,8 +56,8 @@ public class BotServiceImpl {
         StringEntity entity;
         try {
             String string = mapper.writeValueAsString(sendMessage);
-            entity = new StringEntity(string);
-        } catch (JsonProcessingException | UnsupportedEncodingException e) {
+            entity = new StringEntity(string, StandardCharsets.UTF_8);
+        } catch (JsonProcessingException e) {
             log.error("",e);
             return;
         }

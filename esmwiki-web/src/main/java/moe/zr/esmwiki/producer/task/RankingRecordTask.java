@@ -11,7 +11,6 @@ import moe.zr.qqbot.entry.IMessageQuickReply;
 import moe.zr.qqbot.entry.SendMessage;
 import moe.zr.service.PointRankingService;
 import moe.zr.service.SongRankingService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -43,7 +42,7 @@ public class RankingRecordTask implements IMessageQuickReply {
 
 
     final static String cron = "0 */1 * * * ?";
-    private DateFormat dateTimeInstance = DateFormat.getDateTimeInstance();
+    private final DateFormat dateTimeInstance = DateFormat.getDateTimeInstance();
 
 
     public RankingRecordTask(PointRankingService pointRankingService, PointRankingRecordRepository pointRankingRecordRepository, ScoreRankingRecordRepository scoreRankingRecordRepository, SongRankingService songRankingService, BotServiceImpl botService) {
@@ -66,10 +65,7 @@ public class RankingRecordTask implements IMessageQuickReply {
                 pointRankingRecordRepository.insert(pointRankingRecords);
                 log.debug("成功获取");
             } catch (IOException | BadPaddingException | IllegalBlockSizeException | ParseException | ExecutionException | InterruptedException | RuntimeException e) {
-                e.printStackTrace();
-                log.error("", e);
-                botService.sendMessage(new SendMessage().setMessage(e.getMessage()));
-                flag = false;
+                exceptionHandle(e);
             }
         }
     }
@@ -85,12 +81,17 @@ public class RankingRecordTask implements IMessageQuickReply {
                 scoreRankingRecordRepository.insert(songRankingRecords);
                 log.debug("成功获取");
             } catch (IOException | BadPaddingException | IllegalBlockSizeException | ParseException | ExecutionException | InterruptedException | RuntimeException e) {
-                e.printStackTrace();
-                log.error("", e);
-                botService.sendMessage(new SendMessage().setMessage(e.getMessage()));
-                flag = false;
+                exceptionHandle(e);
             }
         }
+    }
+
+    private void exceptionHandle(Exception e) {
+        e.printStackTrace();
+        log.error("", e);
+        botService.sendMessage(new SendMessage().setMessage("我罢工了"));
+        botService.sendMessage(new SendMessage().setMessage(e.getMessage()));
+        flag = false;
     }
 
     private final Timer timer = new Timer();
