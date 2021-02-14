@@ -1,8 +1,10 @@
 package moe.zr.esmwiki.producer.task;
 
 import lombok.extern.slf4j.Slf4j;
+import moe.zr.esmwiki.producer.util.ReplyUtils;
 import moe.zr.qqbot.entry.IMessageQuickReply;
 import moe.zr.service.MyPageService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -18,6 +20,8 @@ public class KeepAliveTask implements IMessageQuickReply {
     private boolean alive = true;
     final
     MyPageService myPageService;
+    @Autowired
+    ReplyUtils replyUtils;
 
     public KeepAliveTask(MyPageService myPageService) {
         this.myPageService = myPageService;
@@ -31,6 +35,8 @@ public class KeepAliveTask implements IMessageQuickReply {
                 log.info("成功获取MyPage");
             } catch (BadPaddingException | IllegalBlockSizeException | ExecutionException | RuntimeException | InterruptedException e) {
                 e.printStackTrace();
+                log.error("获取MyPage出错", e);
+                replyUtils.sendMessage("获取MyPage出错，已停止工作");
                 alive = false;
             }
         }

@@ -1,19 +1,16 @@
-package moe.zr.esmwiki.producer.service.impl;
+package moe.zr.esmwiki.producer.util;
 
-import moe.zr.qqbot.entry.SendMessage;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.*;
-
 @SpringBootTest
-class BotServiceImplTest {
+class ReplyUtilsTest {
     @Autowired
-    BotServiceImpl botService;
-
+    ReplyUtils replyUtils;
     @Test
     void sendMessage() {
-        botService.sendMessage(new SendMessage().setMessage("测试发送信息 test message").setGroupId(773891409));
+        replyUtils.sendMessage("测试 | test message");
     }
 }

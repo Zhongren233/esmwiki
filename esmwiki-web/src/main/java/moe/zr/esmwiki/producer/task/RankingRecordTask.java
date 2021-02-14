@@ -3,14 +3,14 @@ package moe.zr.esmwiki.producer.task;
 import lombok.extern.slf4j.Slf4j;
 import moe.zr.esmwiki.producer.repository.PointRankingRecordRepository;
 import moe.zr.esmwiki.producer.repository.ScoreRankingRecordRepository;
-import moe.zr.esmwiki.producer.service.impl.BotServiceImpl;
+import moe.zr.esmwiki.producer.util.ReplyUtils;
 import moe.zr.pojo.PointRankingRecord;
 import moe.zr.pojo.RankingRecord;
 import moe.zr.pojo.SongRankingRecord;
 import moe.zr.qqbot.entry.IMessageQuickReply;
-import moe.zr.qqbot.entry.SendMessage;
 import moe.zr.service.PointRankingService;
 import moe.zr.service.SongRankingService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -37,20 +37,20 @@ public class RankingRecordTask implements IMessageQuickReply {
     final
     SongRankingService songRankingService;
     final
-    BotServiceImpl botService;
-    private boolean flag = true;
+    ReplyUtils replyUtils;
+    private boolean flag = false;
 
 
     final static String cron = "0 */1 * * * ?";
     private final DateFormat dateTimeInstance = DateFormat.getDateTimeInstance();
 
 
-    public RankingRecordTask(PointRankingService pointRankingService, PointRankingRecordRepository pointRankingRecordRepository, ScoreRankingRecordRepository scoreRankingRecordRepository, SongRankingService songRankingService, BotServiceImpl botService) {
+    public RankingRecordTask(PointRankingService pointRankingService, PointRankingRecordRepository pointRankingRecordRepository, ScoreRankingRecordRepository scoreRankingRecordRepository, SongRankingService songRankingService, ReplyUtils replyUtils) {
         this.pointRankingService = pointRankingService;
         this.pointRankingRecordRepository = pointRankingRecordRepository;
         this.scoreRankingRecordRepository = scoreRankingRecordRepository;
         this.songRankingService = songRankingService;
-        this.botService = botService;
+        this.replyUtils = replyUtils;
     }
 
     @Scheduled(cron = cron)
@@ -88,9 +88,9 @@ public class RankingRecordTask implements IMessageQuickReply {
 
     private void exceptionHandle(Exception e) {
         e.printStackTrace();
+        replyUtils.sendMessage("我罢工了");
+        replyUtils.sendMessage(e.getMessage());
         log.error("", e);
-        botService.sendMessage(new SendMessage().setMessage("我罢工了"));
-        botService.sendMessage(new SendMessage().setMessage(e.getMessage()));
         flag = false;
     }
 
@@ -104,7 +104,7 @@ public class RankingRecordTask implements IMessageQuickReply {
                 case "status":
                     String s = "正在运行:" + flag;
                     if (scheduled != null) {
-                        s += "\n即将运行:";
+                        s += "即将运行:";
                         s += DateFormat.getDateTimeInstance().format(scheduled);
                     }
                     return s;
