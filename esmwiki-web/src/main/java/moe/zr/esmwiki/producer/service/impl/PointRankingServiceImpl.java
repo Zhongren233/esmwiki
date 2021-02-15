@@ -70,7 +70,7 @@ public class PointRankingServiceImpl implements PointRankingService {
     @Override
     public Integer getPointRewardCount(Integer point, Integer startPage) throws IllegalBlockSizeException, ExecutionException, InterruptedException, BadPaddingException, IOException {
         int currentPage = startPage;
-        int result = (currentPage-1)*20;
+        int result = (currentPage - 1) * 20;
         JavaType javaType = mapper.getTypeFactory().constructParametricType(ArrayList.class, PointRanking.class);
         do {
             List<PointRanking> ranking = mapper.readValue(getRankingRecord(currentPage).get("ranking").toString(), javaType);
@@ -87,7 +87,7 @@ public class PointRankingServiceImpl implements PointRankingService {
                 break;
             }
         } while (true);
-        return result-1;
+        return result - 1;
     }
 
     public Integer getPointRewardCount(Integer point) throws InterruptedException, ExecutionException, BadPaddingException, IllegalBlockSizeException, IOException {

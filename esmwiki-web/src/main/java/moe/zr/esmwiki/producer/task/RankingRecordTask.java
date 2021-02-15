@@ -1,7 +1,6 @@
 package moe.zr.esmwiki.producer.task;
 
 import lombok.extern.slf4j.Slf4j;
-import moe.zr.enums.EventPointReward;
 import moe.zr.esmwiki.producer.repository.PointRankingRecordRepository;
 import moe.zr.esmwiki.producer.repository.ScoreRankingRecordRepository;
 import moe.zr.esmwiki.producer.util.ReplyUtils;
@@ -89,9 +88,9 @@ public class RankingRecordTask implements IMessageQuickReply {
     }
 
     @Scheduled(cron = "0 0 0 1/1 * ? ")
-    public void dailyReport(){
+    public void dailyReport() {
         String message = "今天的活动信息" +
-                "\n" +"\n"+
+                "\n" + "\n" +
                 sendTodayEventPointRankingInfo() +
                 "\n" +
                 sendTodayEventPointRewardInfo();
