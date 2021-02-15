@@ -17,4 +17,8 @@ public interface PointRankingService {
     JsonNode getRankingRecord(EventRankingNavigationType type) throws IOException, BadPaddingException, IllegalBlockSizeException, ParseException, ExecutionException, InterruptedException;
 
     List<RankingRecord> getRankingRecords() throws BadPaddingException, IOException, IllegalBlockSizeException, ParseException, ExecutionException, InterruptedException;
+
+    Integer getCount(Integer point, Integer startPage) throws IllegalBlockSizeException, ExecutionException, InterruptedException, BadPaddingException, IOException;
+
+    Integer getCount(Integer point) throws InterruptedException, ExecutionException, BadPaddingException, IllegalBlockSizeException, IOException;
 }

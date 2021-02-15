@@ -1,7 +1,9 @@
 package moe.zr.esmwiki.producer.service.impl;
 
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import moe.zr.entry.hekk.PointRanking;
 import moe.zr.enums.EventRankingNavigationType;
 import moe.zr.esmwiki.producer.client.EsmHttpClient;
 import moe.zr.esmwiki.producer.util.RequestUtils;
@@ -16,6 +18,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -60,6 +63,34 @@ public class PointRankingServiceImpl implements PointRankingService, IMessageQui
         }
         return pointRankingRecords;
     }
+
+    @Override
+    public Integer getCount(Integer point,Integer startPage) throws IllegalBlockSizeException, ExecutionException, InterruptedException, BadPaddingException, IOException {
+        int currentPage = startPage;
+        int result = 0;
+        JavaType javaType = mapper.getTypeFactory().constructParametricType(ArrayList.class, PointRanking.class);
+        do {
+            List<PointRanking> ranking = mapper.readValue(getRankingRecord(currentPage).get("ranking").toString(), javaType);
+            int size = ranking.size();
+            PointRanking lastRanking = ranking.get(size - 1);
+            if (lastRanking.getPoint() > point) {
+                result = currentPage * 20;
+                currentPage++;
+            } else {
+                result +=
+                        ranking.stream()
+                        .filter(pointRanking -> pointRanking.getPoint() > point)
+                        .count();
+                break;
+            }
+        } while (true);
+        return result;
+    }
+
+    public Integer getCount(Integer point) throws InterruptedException, ExecutionException, BadPaddingException, IllegalBlockSizeException, IOException {
+        return getCount(point, 1);
+    }
+
 
     private String initContent(int page) {
         return utils.basicRequest() + "&page=" + page;

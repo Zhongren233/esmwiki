@@ -38,7 +38,7 @@ public class RankingRecordTask implements IMessageQuickReply {
     SongRankingService songRankingService;
     final
     ReplyUtils replyUtils;
-    private boolean flag = false;
+    private boolean flag = true;
 
 
     final static String cron = "0 */1 * * * ?";
@@ -54,35 +54,37 @@ public class RankingRecordTask implements IMessageQuickReply {
     }
 
     @Scheduled(cron = cron)
-    private void batchGetPointRankingRecord() {
+    private void task() {
         if (flag) {
-            try {
-                ArrayList<PointRankingRecord> pointRankingRecords = new ArrayList<>();
-                List<RankingRecord> rankingRecords = pointRankingService.getRankingRecords();
-                rankingRecords.forEach(
-                        a -> pointRankingRecords.add(new PointRankingRecord(a))
-                );
-                pointRankingRecordRepository.insert(pointRankingRecords);
-                log.debug("成功获取");
-            } catch (IOException | BadPaddingException | IllegalBlockSizeException | ParseException | ExecutionException | InterruptedException | RuntimeException e) {
-                exceptionHandle(e);
-            }
+            batchGetPointRankingRecord();
+            batchGetSongRankingRecord();
         }
     }
 
-    @Scheduled(cron = cron)
+    private void batchGetPointRankingRecord() {
+        try {
+            ArrayList<PointRankingRecord> pointRankingRecords = new ArrayList<>();
+            List<RankingRecord> rankingRecords = pointRankingService.getRankingRecords();
+            rankingRecords.forEach(
+                    a -> pointRankingRecords.add(new PointRankingRecord(a))
+            );
+            pointRankingRecordRepository.insert(pointRankingRecords);
+            log.debug("成功获取");
+        } catch (IOException | BadPaddingException | IllegalBlockSizeException | ParseException | ExecutionException | InterruptedException | RuntimeException e) {
+            exceptionHandle(e);
+        }
+    }
+
     private void batchGetSongRankingRecord() {
-        if (flag) {
-            try {
-                ArrayList<SongRankingRecord> songRankingRecords = new ArrayList<>();
-                songRankingService.getSongRankingRecords().forEach(
-                        a -> songRankingRecords.add(new SongRankingRecord(a))
-                );
-                scoreRankingRecordRepository.insert(songRankingRecords);
-                log.debug("成功获取");
-            } catch (IOException | BadPaddingException | IllegalBlockSizeException | ParseException | ExecutionException | InterruptedException | RuntimeException e) {
-                exceptionHandle(e);
-            }
+        try {
+            ArrayList<SongRankingRecord> songRankingRecords = new ArrayList<>();
+            songRankingService.getSongRankingRecords().forEach(
+                    a -> songRankingRecords.add(new SongRankingRecord(a))
+            );
+            scoreRankingRecordRepository.insert(songRankingRecords);
+            log.debug("成功获取");
+        } catch (IOException | BadPaddingException | IllegalBlockSizeException | ParseException | ExecutionException | InterruptedException | RuntimeException e) {
+            exceptionHandle(e);
         }
     }
 
@@ -135,6 +137,7 @@ public class RankingRecordTask implements IMessageQuickReply {
                     return DateFormat.getDateTimeInstance().format(new Date());
                 case "on":
                     this.flag = true;
+                    return "ok";
             }
         }
         return "/task {status} {set}";
