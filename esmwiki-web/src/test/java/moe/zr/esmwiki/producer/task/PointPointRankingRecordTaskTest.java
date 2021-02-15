@@ -12,12 +12,15 @@ import java.util.Date;
 import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
+@SpringBootTest
 class PointPointRankingRecordTaskTest {
+    @Autowired
+    RankingRecordTask task;
 
     @Test
-    void recordRank() throws ParseException {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        Date parse = simpleDateFormat.parse("2020-10-23 12:00");
-        System.out.println("simpleDateFormat.format(parse) = " + simpleDateFormat.format(parse));
+    void test() {
+        task.dailyReport();
     }
+
 }
+

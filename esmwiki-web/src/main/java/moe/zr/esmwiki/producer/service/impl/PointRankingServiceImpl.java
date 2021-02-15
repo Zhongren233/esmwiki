@@ -4,28 +4,28 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import moe.zr.entry.hekk.PointRanking;
+import moe.zr.enums.EventPointReward;
 import moe.zr.enums.EventRankingNavigationType;
 import moe.zr.esmwiki.producer.client.EsmHttpClient;
 import moe.zr.esmwiki.producer.util.RequestUtils;
 import moe.zr.pojo.RankingRecord;
-import moe.zr.qqbot.entry.IMessageQuickReply;
 import moe.zr.service.PointRankingService;
 import org.apache.http.client.methods.HttpPost;
 import org.msgpack.type.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import static moe.zr.esmwiki.producer.service.impl.SongRankingServiceImpl.getString;
 
 @Service
-public class PointRankingServiceImpl implements PointRankingService, IMessageQuickReply {
+public class PointRankingServiceImpl implements PointRankingService {
     private final String uri = "https://saki-server.happyelements.cn/get/events/point_ranking";
 
     final
@@ -34,11 +34,14 @@ public class PointRankingServiceImpl implements PointRankingService, IMessageQui
     EsmHttpClient httpClient;
     final
     RequestUtils utils;
+    final
+    StringRedisTemplate redisTemplate;
 
-    public PointRankingServiceImpl(RequestUtils utils, EsmHttpClient httpClient, ObjectMapper mapper) {
+    public PointRankingServiceImpl(RequestUtils utils, EsmHttpClient httpClient, ObjectMapper mapper, StringRedisTemplate redisTemplate) {
         this.utils = utils;
         this.httpClient = httpClient;
         this.mapper = mapper;
+        this.redisTemplate = redisTemplate;
     }
 
 
@@ -65,9 +68,9 @@ public class PointRankingServiceImpl implements PointRankingService, IMessageQui
     }
 
     @Override
-    public Integer getCount(Integer point,Integer startPage) throws IllegalBlockSizeException, ExecutionException, InterruptedException, BadPaddingException, IOException {
+    public Integer getPointRewardCount(Integer point, Integer startPage) throws IllegalBlockSizeException, ExecutionException, InterruptedException, BadPaddingException, IOException {
         int currentPage = startPage;
-        int result = 0;
+        int result = (currentPage-1)*20;
         JavaType javaType = mapper.getTypeFactory().constructParametricType(ArrayList.class, PointRanking.class);
         do {
             List<PointRanking> ranking = mapper.readValue(getRankingRecord(currentPage).get("ranking").toString(), javaType);
@@ -77,18 +80,42 @@ public class PointRankingServiceImpl implements PointRankingService, IMessageQui
                 result = currentPage * 20;
                 currentPage++;
             } else {
-                result +=
-                        ranking.stream()
+                long count = ranking.stream()
                         .filter(pointRanking -> pointRanking.getPoint() > point)
                         .count();
+                result += count;
                 break;
             }
         } while (true);
-        return result;
+        return result-1;
     }
 
-    public Integer getCount(Integer point) throws InterruptedException, ExecutionException, BadPaddingException, IllegalBlockSizeException, IOException {
-        return getCount(point, 1);
+    public Integer getPointRewardCount(Integer point) throws InterruptedException, ExecutionException, BadPaddingException, IllegalBlockSizeException, IOException {
+        String key = "pointRankingService.getPointRewardCount::";
+        String s = redisTemplate.opsForValue().get(key + point);
+        Integer count;
+        if (s == null) {
+            count = getPointRewardCount(point, 1);
+        } else {
+            Integer startPage = Integer.valueOf(s);
+            count = getPointRewardCount(point, startPage);
+        }
+        int page = count / 20 + 1;
+        redisTemplate.opsForValue().set(
+                key + point,
+                String.valueOf(page));
+        return count;
+    }
+
+    public String batchGetPointRewardCount() throws InterruptedException, ExecutionException, IllegalBlockSizeException, BadPaddingException, IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (EventPointReward eventPointReward : EventPointReward.values()) {
+            stringBuilder.append(eventPointReward.getGear()).append("人数:");
+            Integer count = getPointRewardCount(eventPointReward.getPoint());
+            stringBuilder.append(count);
+            stringBuilder.append("\n");
+        }
+        return stringBuilder.toString();
     }
 
 
@@ -103,9 +130,23 @@ public class PointRankingServiceImpl implements PointRankingService, IMessageQui
     @Override
     public String onMessage(String[] str) {
         try {
-            StringBuilder stringBuilder = new StringBuilder();
-            List<RankingRecord> pointRankingRecords = getRankingRecords();
-            return getString(stringBuilder, pointRankingRecords);
+            switch (str[1]) {
+                case "now":
+                    StringBuilder stringBuilder = new StringBuilder();
+                    List<RankingRecord> pointRankingRecords = getRankingRecords();
+                    return getString(stringBuilder, pointRankingRecords);
+                case "count":
+                    EventPointReward eventPointReward = EventPointReward.getEventPointReward(str[2]);
+                    if (eventPointReward == null) {
+                        throw new IllegalArgumentException();
+                    }
+                    return eventPointReward.getGear() + "人数为:" + getPointRewardCount(eventPointReward.getPoint());
+            }
+            return "/pr {now} {count}";
+        } catch (IndexOutOfBoundsException exception) {
+            return "参数长度不正确";
+        } catch (IllegalArgumentException illegalArgumentException) {
+            return "不正确的参数";
         } catch (Exception e) {
             e.printStackTrace();
             return "为什么会这样呢";

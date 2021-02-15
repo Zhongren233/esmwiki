@@ -1,6 +1,7 @@
 package moe.zr.esmwiki.producer.task;
 
 import lombok.extern.slf4j.Slf4j;
+import moe.zr.enums.EventPointReward;
 import moe.zr.esmwiki.producer.repository.PointRankingRecordRepository;
 import moe.zr.esmwiki.producer.repository.ScoreRankingRecordRepository;
 import moe.zr.esmwiki.producer.util.ReplyUtils;
@@ -10,7 +11,6 @@ import moe.zr.pojo.SongRankingRecord;
 import moe.zr.qqbot.entry.IMessageQuickReply;
 import moe.zr.service.PointRankingService;
 import moe.zr.service.SongRankingService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -85,6 +85,30 @@ public class RankingRecordTask implements IMessageQuickReply {
             log.debug("成功获取");
         } catch (IOException | BadPaddingException | IllegalBlockSizeException | ParseException | ExecutionException | InterruptedException | RuntimeException e) {
             exceptionHandle(e);
+        }
+    }
+
+    @Scheduled(cron = "0 0 0 1/1 * ? ")
+    public void dailyReport(){
+        String message = "今天的活动信息" +
+                "\n" +"\n"+
+                sendTodayEventPointRankingInfo() +
+                "\n" +
+                sendTodayEventPointRewardInfo();
+        log.info(message);
+        replyUtils.sendMessage(message);
+    }
+
+    private String sendTodayEventPointRankingInfo() {
+        return pointRankingService.onMessage("/pr now".split(" "));
+    }
+
+    private String sendTodayEventPointRewardInfo() {
+        try {
+            return pointRankingService.batchGetPointRewardCount();
+        } catch (Exception e) {
+            exceptionHandle(e);
+            return "获取档位人数出错";
         }
     }
 
