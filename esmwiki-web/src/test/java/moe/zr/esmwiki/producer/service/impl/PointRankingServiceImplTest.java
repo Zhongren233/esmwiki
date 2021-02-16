@@ -40,7 +40,7 @@ class PointRankingServiceImplTest {
         }
         out.println(currentTimeMillis() - l);
     }
-
+/*
     private String initContent(int page) {
         return utils.basicRequest() + "&page=" + page;
     }
@@ -69,7 +69,7 @@ class PointRankingServiceImplTest {
 
         });
     }
-
+*/
     @Test
     void getCount() throws
             InterruptedException, ExecutionException, BadPaddingException, IllegalBlockSizeException, IOException {
