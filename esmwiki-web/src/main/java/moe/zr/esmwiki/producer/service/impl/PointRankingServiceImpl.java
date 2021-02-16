@@ -85,7 +85,7 @@ public class PointRankingServiceImpl implements PointRankingService {
                 /*
                  * 由于排行榜第一页19人 所以-1
                  */
-                result = (currentPage * 20) - 1;
+                result = (currentPage * 20);
                 currentPage++;
             } else {
                 long count = ranking.stream()
@@ -95,7 +95,10 @@ public class PointRankingServiceImpl implements PointRankingService {
                 break;
             }
         } while (true);
-        return result;
+        if (currentPage == 1)
+            return result;
+        else
+            return result - 1;
     }
 
     public Integer getPointRewardCount(Integer point) throws InterruptedException, ExecutionException, BadPaddingException, IllegalBlockSizeException, IOException {

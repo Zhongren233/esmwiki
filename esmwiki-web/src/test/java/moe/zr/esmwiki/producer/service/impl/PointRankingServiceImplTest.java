@@ -32,44 +32,46 @@ class PointRankingServiceImplTest {
     @Autowired
     RequestUtils utils;
 
-    @Test
-    void getRankingRecord() throws BadPaddingException, InterruptedException, IOException, ExecutionException, IllegalBlockSizeException {
-        long l = currentTimeMillis();
-        for (int i = 0; i < 500; i++) {
-            out.println(service.getRankingRecord(i));
-        }
-        out.println(currentTimeMillis() - l);
-    }
-/*
-    private String initContent(int page) {
-        return utils.basicRequest() + "&page=" + page;
-    }
-
-    @Test
-    void async() throws BadPaddingException, IllegalBlockSizeException {
-        long l = currentTimeMillis();
-        ArrayList<Future<HttpResponse>> futures = new ArrayList<>();
-        for (int i = 0; i < 5000; i++) {
-            HttpPost httpPost = utils.buildHttpRequest("https://saki-server.happyelements.cn/get/events/point_ranking", initContent(i));
-            Future<HttpResponse> execute = asyncClient.execute(httpPost, null);
-            futures.add(execute);
-        }
-        byte[] bytes = new byte[30 * 1000];
-        futures.forEach(future -> {
-            try {
-                InputStream content = future.get().getEntity().getContent();
-                BufferedInputStream bufferedInputStream = new BufferedInputStream(content);
-                int read = bufferedInputStream.read(bytes);
-                byte[] bytes1 = Arrays.copyOf(bytes, read);
-                new MessagePack().read(CryptoUtils.decrypt(bytes1));
-                bufferedInputStream.close();
-            } catch (IOException | InterruptedException | ExecutionException | BadPaddingException | IllegalBlockSizeException e) {
-                e.printStackTrace();
+    /*
+        @Test
+        void getRankingRecord() throws BadPaddingException, InterruptedException, IOException, ExecutionException, IllegalBlockSizeException {
+            long l = currentTimeMillis();
+            for (int i = 0; i < 500; i++) {
+                out.println(service.getRankingRecord(i));
             }
+            out.println(currentTimeMillis() - l);
+        }
 
-        });
-    }
-*/
+        private String initContent(int page) {
+            return utils.basicRequest() + "&page=" + page;
+        }
+
+        @Test
+        void async() throws BadPaddingException, IllegalBlockSizeException {
+            long l = currentTimeMillis();
+            ArrayList<Future<HttpResponse>> futures = new ArrayList<>();
+            for (int i = 0; i < 5000; i++) {
+                HttpPost httpPost = utils.buildHttpRequest("https://saki-server.happyelements.cn/get/events/point_ranking", initContent(i));
+                Future<HttpResponse> execute = asyncClient.execute(httpPost, null);
+                futures.add(execute);
+            }
+            byte[] bytes = new byte[30 * 1000];
+            futures.forEach(future -> {
+                try {
+                    InputStream content = future.get().getEntity().getContent();
+                    BufferedInputStream bufferedInputStream = new BufferedInputStream(content);
+                    int read = bufferedInputStream.read(bytes);
+                    byte[] bytes1 = Arrays.copyOf(bytes, read);
+                    new MessagePack().read(CryptoUtils.decrypt(bytes1));
+                    bufferedInputStream.close();
+                } catch (IOException | InterruptedException | ExecutionException | BadPaddingException | IllegalBlockSizeException e) {
+                    e.printStackTrace();
+                }
+
+            });
+        }
+    */
+
     @Test
     void getCount() throws
             InterruptedException, ExecutionException, BadPaddingException, IllegalBlockSizeException, IOException {
