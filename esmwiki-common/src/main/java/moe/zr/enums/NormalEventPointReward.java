@@ -1,6 +1,6 @@
 package moe.zr.enums;
 
-public enum NormalEventPointReward {
+public enum NormalEventPointReward implements IEventPointReward{
     FIRST_CARD("一卡", 350 * 10000),
     SECOND_CARD("二卡", 750 * 10000),
     THIRD_CARD("三卡", 1100 * 10000),

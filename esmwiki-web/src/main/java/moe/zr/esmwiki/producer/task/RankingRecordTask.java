@@ -1,6 +1,7 @@
 package moe.zr.esmwiki.producer.task;
 
 import lombok.extern.slf4j.Slf4j;
+import moe.zr.enums.EventType;
 import moe.zr.esmwiki.producer.repository.PointRankingRecordRepository;
 import moe.zr.esmwiki.producer.repository.ScoreRankingRecordRepository;
 import moe.zr.esmwiki.producer.util.ReplyUtils;
@@ -27,6 +28,11 @@ import java.util.concurrent.ExecutionException;
 @Configuration
 @Slf4j
 public class RankingRecordTask implements IMessageQuickReply {
+    private boolean flag = true;
+    private EventType eventType = EventType.UNIT;
+    private final DateFormat dateTimeInstance = DateFormat.getDateTimeInstance();
+    final static String cron = "0 */1 * * * ?";
+
     final
     PointRankingService pointRankingService;
     final
@@ -37,11 +43,7 @@ public class RankingRecordTask implements IMessageQuickReply {
     SongRankingService songRankingService;
     final
     ReplyUtils replyUtils;
-    private boolean flag = true;
 
-
-    final static String cron = "0 */1 * * * ?";
-    private final DateFormat dateTimeInstance = DateFormat.getDateTimeInstance();
 
 
     public RankingRecordTask(PointRankingService pointRankingService, PointRankingRecordRepository pointRankingRecordRepository, ScoreRankingRecordRepository scoreRankingRecordRepository, SongRankingService songRankingService, ReplyUtils replyUtils) {
@@ -104,10 +106,14 @@ public class RankingRecordTask implements IMessageQuickReply {
 
     private String sendTodayEventPointRewardInfo() {
         try {
-            return pointRankingService.batchGetPointRewardCount();
+            if (EventType.TOUR.equals(eventType)) {
+                return pointRankingService.batchGetTourEventPointRewardCount();
+            } else {
+                return pointRankingService.batchGetNormalEventPointRewardCount();
+            }
         } catch (Exception e) {
             exceptionHandle(e);
-            return "获取档位人数出错";
+            return "获取档位人数出错,可用的信息:" + e.getMessage();
         }
     }
 
@@ -133,7 +139,7 @@ public class RankingRecordTask implements IMessageQuickReply {
                         s += DateFormat.getDateTimeInstance().format(scheduled);
                     }
                     return s;
-                case "set":
+                case "settask":
                     if (scheduled != null) {
                         return "已有任务:" + dateTimeInstance.format(scheduled);
                     }
@@ -145,7 +151,6 @@ public class RankingRecordTask implements IMessageQuickReply {
                         scheduled = simpleDateFormat.parse(str[2]);
                         log.info("成功获取到时间:{}", scheduled);
                     } catch (ParseException e) {
-                        e.printStackTrace();
                         return "格式不正确 yyyyMMdd HH:mm";
                     }
                     timer.schedule(new TimerTask() {
@@ -156,6 +161,17 @@ public class RankingRecordTask implements IMessageQuickReply {
                         }
                     }, scheduled);
                     return DateFormat.getDateTimeInstance().format(scheduled);
+                case "settype":
+                    if (str.length == 2) {
+                        return "没有参数";
+                    }
+                    EventType eventType = EventType.getEventType(str[2]);
+                    if (eventType == null) {
+                        return "格式不正确,支持的参数 {巡演} | {组合} | {洗牌}";
+                    }
+                    this.eventType = eventType;
+                    log.info("设置活动类型为:{}", eventType.getType());
+                    return this.eventType.getType();
                 case "now":
                     return DateFormat.getDateTimeInstance().format(new Date());
                 case "on":
@@ -163,7 +179,7 @@ public class RankingRecordTask implements IMessageQuickReply {
                     return "ok";
             }
         }
-        return "/task {status} {set}";
+        return "/task {status} | {settask} yyyyMMdd HH:mm | {on} | {settype} {type} ";
     }
 
     @Override

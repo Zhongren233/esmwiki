@@ -23,5 +23,7 @@ public interface PointRankingService extends IMessageQuickReply {
 
     Integer getPointRewardCount(Integer point) throws InterruptedException, ExecutionException, BadPaddingException, IllegalBlockSizeException, IOException;
 
-    String batchGetPointRewardCount() throws InterruptedException, ExecutionException, IllegalBlockSizeException, BadPaddingException, IOException;
+    String batchGetNormalEventPointRewardCount() throws InterruptedException, ExecutionException, IllegalBlockSizeException, BadPaddingException, IOException;
+
+    String batchGetTourEventPointRewardCount() throws InterruptedException, ExecutionException, IllegalBlockSizeException, BadPaddingException, IOException;
 }

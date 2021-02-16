@@ -3,9 +3,12 @@ package moe.zr.esmwiki.producer.service.impl;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import moe.zr.entry.hekk.PointRanking;
+import moe.zr.enums.IEventPointReward;
 import moe.zr.enums.NormalEventPointReward;
 import moe.zr.enums.EventRankingNavigationType;
+import moe.zr.enums.TourEventPointReward;
 import moe.zr.esmwiki.producer.client.EsmHttpClient;
 import moe.zr.esmwiki.producer.util.RequestUtils;
 import moe.zr.pojo.RankingRecord;
@@ -21,10 +24,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static moe.zr.esmwiki.producer.service.impl.SongRankingServiceImpl.getString;
 
 @Service
+@Slf4j
 public class PointRankingServiceImpl implements PointRankingService {
     private final String uri = "https://saki-server.happyelements.cn/get/events/point_ranking";
 
@@ -77,17 +82,20 @@ public class PointRankingServiceImpl implements PointRankingService {
             int size = ranking.size();
             PointRanking lastRanking = ranking.get(size - 1);
             if (lastRanking.getPoint() > point) {
-                result = currentPage * 20;
+                /*
+                 * 由于排行榜第一页19人 所以-1
+                 */
+                result = (currentPage * 20) - 1;
                 currentPage++;
             } else {
                 long count = ranking.stream()
-                        .filter(pointRanking -> pointRanking.getPoint() > point)
+                        .filter(pointRanking -> pointRanking.getPoint() >= point)
                         .count();
                 result += count;
                 break;
             }
         } while (true);
-        return result - 1;
+        return result;
     }
 
     public Integer getPointRewardCount(Integer point) throws InterruptedException, ExecutionException, BadPaddingException, IllegalBlockSizeException, IOException {
@@ -103,13 +111,26 @@ public class PointRankingServiceImpl implements PointRankingService {
         int page = count / 20 + 1;
         redisTemplate.opsForValue().set(
                 key + point,
-                String.valueOf(page));
+                String.valueOf(page),
+                60 * 48,
+                TimeUnit.MINUTES);
         return count;
     }
 
-    public String batchGetPointRewardCount() throws InterruptedException, ExecutionException, IllegalBlockSizeException, BadPaddingException, IOException {
+    public String batchGetNormalEventPointRewardCount() throws InterruptedException, ExecutionException, IllegalBlockSizeException, BadPaddingException, IOException {
         StringBuilder stringBuilder = new StringBuilder();
         for (NormalEventPointReward normalEventPointReward : NormalEventPointReward.values()) {
+            stringBuilder.append(normalEventPointReward.getGear()).append("人数:");
+            Integer count = getPointRewardCount(normalEventPointReward.getPoint());
+            stringBuilder.append(count);
+            stringBuilder.append("\n");
+        }
+        return stringBuilder.toString();
+    }
+
+    public String batchGetTourEventPointRewardCount() throws InterruptedException, ExecutionException, IllegalBlockSizeException, BadPaddingException, IOException {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (TourEventPointReward normalEventPointReward : TourEventPointReward.values()) {
             stringBuilder.append(normalEventPointReward.getGear()).append("人数:");
             Integer count = getPointRewardCount(normalEventPointReward.getPoint());
             stringBuilder.append(count);
@@ -130,26 +151,40 @@ public class PointRankingServiceImpl implements PointRankingService {
     @Override
     public String onMessage(String[] str) {
         try {
-            switch (str[1]) {
-                case "now":
-                    StringBuilder stringBuilder = new StringBuilder();
-                    List<RankingRecord> pointRankingRecords = getRankingRecords();
-                    return getString(stringBuilder, pointRankingRecords);
-                case "count":
-                    NormalEventPointReward normalEventPointReward = NormalEventPointReward.getEventPointReward(str[2]);
-                    if (normalEventPointReward == null) {
-                        throw new IllegalArgumentException();
-                    }
-                    return normalEventPointReward.getGear() + "人数为:" + getPointRewardCount(normalEventPointReward.getPoint());
+            if (str.length > 1) {
+                switch (str[1]) {
+                    case "now":
+                        StringBuilder stringBuilder = new StringBuilder();
+                        List<RankingRecord> pointRankingRecords = getRankingRecords();
+                        return getString(stringBuilder, pointRankingRecords);
+                    case "count":
+                        int length = str[2].length();
+                        IEventPointReward eventPointReward = null;
+                        switch (length) {
+                            case 2:
+                                eventPointReward = NormalEventPointReward.getEventPointReward(str[2]);
+                                break;
+                            case 5:
+                                eventPointReward = TourEventPointReward.getEventPointReward(str[2]);
+                                break;
+                        }
+                        if (eventPointReward == null) {
+                            throw new IllegalArgumentException();
+                        }
+                        return eventPointReward.getGear() + "人数为:" + getPointRewardCount(eventPointReward.getPoint());
+                }
             }
             return "/pr {now} {count}";
         } catch (IndexOutOfBoundsException exception) {
             return "参数长度不正确";
         } catch (IllegalArgumentException illegalArgumentException) {
-            return "不正确的参数";
+            return "不正确的参数，支持的参数:\n" +
+                    "{一卡} | {二卡} | {三卡} | {四卡} | {满破}\n" +
+                    "{第一张一卡} | {第一张二卡} | {第一张三卡} | {第一张四卡} | {第一张满破}\n" +
+                    "{第二张一卡} | {第二张二卡} | {第二张三卡} | {第二张四卡} | {第二张满破}";
         } catch (Exception e) {
-            e.printStackTrace();
-            return "为什么会这样呢";
+            log.error("在处理消息时发生了异常，该消息的相关信息 {}", str, e);
+            return "为什么会这样呢,相关有用的信息:\n" + e.getMessage();
         }
     }
 
