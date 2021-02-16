@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import moe.zr.entry.hekk.PointRanking;
-import moe.zr.enums.EventPointReward;
+import moe.zr.enums.NormalEventPointReward;
 import moe.zr.enums.EventRankingNavigationType;
 import moe.zr.esmwiki.producer.client.EsmHttpClient;
 import moe.zr.esmwiki.producer.util.RequestUtils;
@@ -109,9 +109,9 @@ public class PointRankingServiceImpl implements PointRankingService {
 
     public String batchGetPointRewardCount() throws InterruptedException, ExecutionException, IllegalBlockSizeException, BadPaddingException, IOException {
         StringBuilder stringBuilder = new StringBuilder();
-        for (EventPointReward eventPointReward : EventPointReward.values()) {
-            stringBuilder.append(eventPointReward.getGear()).append("人数:");
-            Integer count = getPointRewardCount(eventPointReward.getPoint());
+        for (NormalEventPointReward normalEventPointReward : NormalEventPointReward.values()) {
+            stringBuilder.append(normalEventPointReward.getGear()).append("人数:");
+            Integer count = getPointRewardCount(normalEventPointReward.getPoint());
             stringBuilder.append(count);
             stringBuilder.append("\n");
         }
@@ -136,11 +136,11 @@ public class PointRankingServiceImpl implements PointRankingService {
                     List<RankingRecord> pointRankingRecords = getRankingRecords();
                     return getString(stringBuilder, pointRankingRecords);
                 case "count":
-                    EventPointReward eventPointReward = EventPointReward.getEventPointReward(str[2]);
-                    if (eventPointReward == null) {
+                    NormalEventPointReward normalEventPointReward = NormalEventPointReward.getEventPointReward(str[2]);
+                    if (normalEventPointReward == null) {
                         throw new IllegalArgumentException();
                     }
-                    return eventPointReward.getGear() + "人数为:" + getPointRewardCount(eventPointReward.getPoint());
+                    return normalEventPointReward.getGear() + "人数为:" + getPointRewardCount(normalEventPointReward.getPoint());
             }
             return "/pr {now} {count}";
         } catch (IndexOutOfBoundsException exception) {

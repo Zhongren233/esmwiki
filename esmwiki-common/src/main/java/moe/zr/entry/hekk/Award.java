@@ -6,6 +6,4 @@ import lombok.Data;
 public class Award {
     private Integer awardId;
     private Integer value;
-    private String assetCode;
-
 }
