@@ -43,15 +43,18 @@ public class RankingRecordTask implements IMessageQuickReply {
     SongRankingService songRankingService;
     final
     ReplyUtils replyUtils;
+    final
+    SimpleDateFormat simpleDateFormat;
 
 
 
-    public RankingRecordTask(PointRankingService pointRankingService, PointRankingRecordRepository pointRankingRecordRepository, ScoreRankingRecordRepository scoreRankingRecordRepository, SongRankingService songRankingService, ReplyUtils replyUtils) {
+    public RankingRecordTask(PointRankingService pointRankingService, PointRankingRecordRepository pointRankingRecordRepository, ScoreRankingRecordRepository scoreRankingRecordRepository, SongRankingService songRankingService, ReplyUtils replyUtils, SimpleDateFormat simpleDateFormat) {
         this.pointRankingService = pointRankingService;
         this.pointRankingRecordRepository = pointRankingRecordRepository;
         this.scoreRankingRecordRepository = scoreRankingRecordRepository;
         this.songRankingService = songRankingService;
         this.replyUtils = replyUtils;
+        this.simpleDateFormat = simpleDateFormat;
     }
 
     @Scheduled(cron = cron)
@@ -147,7 +150,6 @@ public class RankingRecordTask implements IMessageQuickReply {
                         return "没有参数";
                     }
                     try {
-                        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyyMMdd HH:mm");
                         scheduled = simpleDateFormat.parse(str[2]);
                         log.info("成功获取到时间:{}", scheduled);
                     } catch (ParseException e) {
