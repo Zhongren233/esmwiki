@@ -6,5 +6,10 @@ package moe.zr.qqbot.entry;
 public interface IMessageQuickReply {
     String onMessage(String[] str);
 
+    default String onMessage(Message message) {
+        String[] s = message.getRawMessage().split(" ");
+        return onMessage(s);
+    }
+
     String commandPrefix();
 }

@@ -12,6 +12,7 @@ import moe.zr.enums.TourEventPointReward;
 import moe.zr.esmwiki.producer.client.EsmHttpClient;
 import moe.zr.esmwiki.producer.util.RequestUtils;
 import moe.zr.pojo.RankingRecord;
+import moe.zr.qqbot.entry.Message;
 import moe.zr.service.PointRankingService;
 import org.apache.http.client.methods.HttpPost;
 import org.msgpack.type.Value;
@@ -190,6 +191,7 @@ public class PointRankingServiceImpl implements PointRankingService {
             return "为什么会这样呢,相关有用的信息:\n" + e.getMessage();
         }
     }
+
 
     @Override
     public String commandPrefix() {
