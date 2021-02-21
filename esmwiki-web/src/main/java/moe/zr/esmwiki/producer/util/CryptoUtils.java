@@ -46,7 +46,11 @@ public class CryptoUtils {
         }
     }
 
-    public static byte[] decrypt(byte[] bytes) throws BadPaddingException, IllegalBlockSizeException {
+    /**
+     * 突然发现这玩意有并发问题
+     * synchronized一下
+     */
+    public synchronized static byte[] decrypt(byte[] bytes) throws BadPaddingException, IllegalBlockSizeException {
         return deCryptoCipher.doFinal(bytes);
     }
 

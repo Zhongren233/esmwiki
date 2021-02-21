@@ -1,5 +1,6 @@
 package moe.zr.esmwiki.producer.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import moe.zr.esmwiki.producer.util.CryptoUtils;
 import moe.zr.esmwiki.producer.util.RequestUtils;
 import org.apache.http.HttpResponse;
@@ -103,5 +104,11 @@ class PointRankingServiceImplTest {
         commands.forEach(s ->
                 out.println(service.onMessage(s.split(" ")))
         );
+    }
+
+    @Test
+    void testGet() throws IllegalBlockSizeException, ExecutionException, InterruptedException, BadPaddingException, IOException {
+        JsonNode rankingRecord = service.getRankingRecord(1);
+        out.println(rankingRecord);
     }
 }

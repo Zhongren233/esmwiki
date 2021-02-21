@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class ScoreRanking {
     @Id
     private String id;
-    private UserProfile userProfile;
+    private Integer eventId;
     private Integer userId;
     private Integer point;
     private Integer rank;
