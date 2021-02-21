@@ -200,7 +200,10 @@ public class EventServiceImpl implements IMessageQuickReply {
 
     @Override
     public String onMessage(String[] str) {
-        return saveAllRanking();
+        if (str.length == 2) {
+            return saveAllRanking();
+        }
+        return null;
     }
 
     @Override
@@ -217,6 +220,6 @@ public class EventServiceImpl implements IMessageQuickReply {
 
     @Override
     public String commandPrefix() {
-        return "/event data";
+        return "/event";
     }
 }

@@ -24,16 +24,4 @@ class UserProfileRepositoryTest {
         System.out.println(byId);
     }
 
-    @Test
-    void antest() {
-        Criteria formerNames = Criteria.where("formerNames").ne(null);
-        Query query = new Query().addCriteria(formerNames);
-        List<UserProfile> userProfiles = template.find(query, UserProfile.class);
-        for (UserProfile userProfile : userProfiles) {
-            List<String> formerNames1 = userProfile.getFormerNames();
-            String s = formerNames1.get(0);
-            userProfile.setName(s);
-            repository.save(userProfile);
-        }
-    }
 }
