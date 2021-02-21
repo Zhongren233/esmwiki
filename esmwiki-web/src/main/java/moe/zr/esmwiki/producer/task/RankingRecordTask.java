@@ -28,7 +28,7 @@ import java.util.concurrent.ExecutionException;
 @Configuration
 @Slf4j
 public class RankingRecordTask implements IMessageQuickReply {
-    private boolean flag = true;
+    private boolean flag = false;
     private EventType eventType = EventType.UNIT;
     private final DateFormat dateTimeInstance = DateFormat.getDateTimeInstance();
     final static String cron = "0 */1 * * * ?";
@@ -45,7 +45,6 @@ public class RankingRecordTask implements IMessageQuickReply {
     ReplyUtils replyUtils;
     final
     SimpleDateFormat simpleDateFormat;
-
 
 
     public RankingRecordTask(PointRankingService pointRankingService, PointRankingRecordRepository pointRankingRecordRepository, ScoreRankingRecordRepository scoreRankingRecordRepository, SongRankingService songRankingService, ReplyUtils replyUtils, SimpleDateFormat simpleDateFormat) {

@@ -176,9 +176,14 @@ public class PointRankingServiceImpl implements PointRankingService {
                             throw new IllegalArgumentException();
                         }
                         return eventPointReward.getGear() + "人数为:" + getPointRewardCount(eventPointReward.getPoint());
+                    case "batch":
+                        if (str.length == 3 && "tour".equals(str[2])) {
+                            return batchGetTourEventPointRewardCount();
+                        }
+                        return batchGetTourEventPointRewardCount();
                 }
             }
-            return "/pr {now} {count}";
+            return "/pr {now} |{count}|{batch} {tour}";
         } catch (IndexOutOfBoundsException exception) {
             return "参数长度不正确";
         } catch (IllegalArgumentException illegalArgumentException) {

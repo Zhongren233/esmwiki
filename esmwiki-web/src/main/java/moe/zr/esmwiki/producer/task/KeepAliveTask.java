@@ -20,11 +20,12 @@ public class KeepAliveTask implements IMessageQuickReply {
     private boolean alive = true;
     final
     MyPageService myPageService;
-    @Autowired
+    final
     ReplyUtils replyUtils;
 
-    public KeepAliveTask(MyPageService myPageService) {
+    public KeepAliveTask(MyPageService myPageService, ReplyUtils replyUtils) {
         this.myPageService = myPageService;
+        this.replyUtils = replyUtils;
     }
 
     @Scheduled(fixedDelay = 30 * 60 * 1000)
