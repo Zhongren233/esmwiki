@@ -119,7 +119,9 @@ public class EventServiceImpl implements IMessageQuickReply {
                         for (JsonNode ranking : rankings) {
                             try {
                                 UserProfile userProfile = mapper.treeToValue(ranking.get("user_profile"), UserProfile.class);
+                                /*
                                 userProfileRepository.updateByUserId(userProfile);//更新用户信息
+                                */
                                 PointRanking pointRanking = mapper.treeToValue(ranking, PointRanking.class);
                                 pointRanking.setEventId(eventId);
                                 pointRankings.add(pointRanking);
