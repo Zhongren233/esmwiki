@@ -16,10 +16,10 @@ public class UserProfile {
     @JsonIgnore
     private String _id;
     private Integer id;
-    private List<String> formerNames;
     private String name;
     private Award userAward1;
     private Award userAward2;
     private Integer favoriteCardId;
     private Boolean favoriteCardEvolved;
+    private Integer eventId;
 }

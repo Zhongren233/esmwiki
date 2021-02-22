@@ -93,13 +93,15 @@ public class RankingRecordTask implements IMessageQuickReply {
 
     @Scheduled(cron = "0 0 0 1/1 * ? ")
     public void dailyReport() {
-        String message = "今天的活动信息" +
-                "\n" + "\n" +
-                sendTodayEventPointRankingInfo() +
-                "\n" +
-                sendTodayEventPointRewardInfo();
-        log.info(message);
-        replyUtils.sendMessage(message);
+        if (flag) {
+            String message = "今天的活动信息" +
+                    "\n" + "\n" +
+                    sendTodayEventPointRankingInfo() +
+                    "\n" +
+                    sendTodayEventPointRewardInfo();
+            log.info(message);
+            replyUtils.sendMessage(message);
+        }
     }
 
     private String sendTodayEventPointRankingInfo() {
