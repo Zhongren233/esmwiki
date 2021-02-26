@@ -19,7 +19,8 @@ class PointPointRankingRecordTaskTest {
 
     @Test
     void test() {
-        task.dailyReport();
+        String[] s = "/task settask 20210227-12:00".split(" ");
+        System.out.println(task.onMessage(s));
     }
 
 }

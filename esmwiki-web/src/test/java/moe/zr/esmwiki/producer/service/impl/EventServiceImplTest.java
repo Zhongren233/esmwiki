@@ -9,5 +9,4 @@ class EventServiceImplTest {
     @Autowired
     EventServiceImpl service;
 
-
 }

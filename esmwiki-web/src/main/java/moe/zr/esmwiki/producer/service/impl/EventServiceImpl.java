@@ -9,11 +9,9 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import moe.zr.entry.hekk.PointRanking;
 import moe.zr.entry.hekk.ScoreRanking;
-import moe.zr.entry.hekk.UserProfile;
 import moe.zr.enums.EventRankingNavigationType;
 import moe.zr.esmwiki.producer.repository.PointRankingRepository;
 import moe.zr.esmwiki.producer.repository.ScoreRankingRepository;
-import moe.zr.esmwiki.producer.repository.UserProfileRepository;
 import moe.zr.esmwiki.producer.util.CryptoUtils;
 import moe.zr.esmwiki.producer.util.RequestUtils;
 import moe.zr.qqbot.entry.IMessageQuickReply;
@@ -25,6 +23,8 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.msgpack.MessagePack;
+import org.msgpack.type.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.BadPaddingException;
@@ -32,10 +32,10 @@ import javax.crypto.IllegalBlockSizeException;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 @Service
 @Slf4j
@@ -52,25 +52,27 @@ public class EventServiceImpl implements IMessageQuickReply {
     PointRankingService pointRankingService;
     final
     SongRankingService songRankingService;
-    final
-    UserProfileRepository userProfileRepository;
 
-    public EventServiceImpl(CloseableHttpAsyncClient httpClient, PointRankingRepository pointRankingRepository, ScoreRankingRepository scoreRankingRepository, UserProfileRepository userProfileRepository, PointRankingService pointRankingService, SongRankingService songRankingService, ObjectMapper mapper, RequestUtils requestUtils) {
+    final
+    StringRedisTemplate stringRedisTemplate;
+
+
+    public EventServiceImpl(CloseableHttpAsyncClient httpClient, PointRankingRepository pointRankingRepository, ScoreRankingRepository scoreRankingRepository, PointRankingService pointRankingService, SongRankingService songRankingService, ObjectMapper mapper, RequestUtils requestUtils, StringRedisTemplate stringRedisTemplate) {
         this.httpClient = httpClient;
         this.pointRankingRepository = pointRankingRepository;
         this.scoreRankingRepository = scoreRankingRepository;
-        this.userProfileRepository = userProfileRepository;
         this.pointRankingService = pointRankingService;
         this.songRankingService = songRankingService;
         this.mapper = mapper;
         this.requestUtils = requestUtils;
+        this.stringRedisTemplate = stringRedisTemplate;
     }
 
     private String saveAllRanking() {
         new Thread(() -> {
             try {
                 saveAllPointRanking();
-//                saveAllScoreRanking();
+                saveAllScoreRanking();
             } catch (BadPaddingException | InterruptedException | ParseException | IOException | ExecutionException | IllegalBlockSizeException e) {
                 log.error("发生异常", e);
             }
@@ -97,7 +99,7 @@ public class EventServiceImpl implements IMessageQuickReply {
         int totalPages = record.get("total_pages").intValue();
         int eventId = record.get("eventId").intValue();
         CountDownLatch latch = new CountDownLatch(10);
-        for (int i = 1; i <= 1; i++) {
+        for (int i = 1; i <= totalPages; i++) {
             HttpPost httpPost = requestUtils.buildHttpRequest(uri, initContent(i));
             httpClient.execute(httpPost, new FutureCallback<HttpResponse>() {
                 @Override
@@ -108,20 +110,17 @@ public class EventServiceImpl implements IMessageQuickReply {
                         log.warn("状态码不等于200,返回的正文:{}", jsonNode);
                     } else {
                         ArrayNode rankings = (ArrayNode) jsonNode.get("ranking");
+                        ArrayList<PointRanking> pointRankings = new ArrayList<>(20);
                         for (JsonNode ranking : rankings) {
                             try {
-                                UserProfile userProfile = mapper.treeToValue(ranking.get("user_profile"), UserProfile.class);
-                                UserProfile userProfile1 = userProfileRepository.updateByUserId(userProfile);
-                                log.info("{}", userProfile1);
                                 PointRanking pointRanking = mapper.treeToValue(ranking, PointRanking.class);
                                 pointRanking.setEventId(eventId);
-                                PointRanking save = pointRankingRepository.save(pointRanking);
-                                log.info("{}", save);
+                                pointRankings.add(pointRanking);
                             } catch (JsonProcessingException e) {
                                 log.warn("发生异常:{}", e.getMessage());
                             }
                         }
-
+                        pointRankingRepository.insert(pointRankings);
                     }
                 }
 
@@ -149,7 +148,7 @@ public class EventServiceImpl implements IMessageQuickReply {
         int totalPages = record.get("total_pages").intValue();
         int eventId = record.get("eventId").intValue();
         CountDownLatch latch = new CountDownLatch(10);
-        for (int i = 1; i <= 10; i++) {
+        for (int i = 1; i <= totalPages; i++) {
             HttpPost httpPost = requestUtils.buildHttpRequest(uri, initContent(i));
             httpClient.execute(httpPost, new FutureCallback<HttpResponse>() {
                 @Override
@@ -160,15 +159,18 @@ public class EventServiceImpl implements IMessageQuickReply {
                         log.warn("状态码不等于200,返回的正文:{}", jsonNode);
                     } else {
                         JsonNode rankings = jsonNode.get("ranking");
+                        ArrayList<ScoreRanking> scoreRankings = new ArrayList<>(20);
                         rankings.forEach(ranking -> {
                             try {
                                 ScoreRanking scoreRanking = mapper.treeToValue(ranking, ScoreRanking.class);
                                 scoreRanking.setEventId(eventId);
-                                scoreRankingRepository.save(scoreRanking);
+                                scoreRankings.add(scoreRanking);
                             } catch (JsonProcessingException e) {
                                 log.warn("发生异常:{}", e.getMessage());
                             }
                         });
+                        scoreRankingRepository.insert(scoreRankings);
+                        log.info("成功完成添加");
                     }
                 }
 
@@ -195,7 +197,8 @@ public class EventServiceImpl implements IMessageQuickReply {
         int read = bufferedInputStream.read(bytes);
         bytes = Arrays.copyOf(bytes, read);
         bufferedInputStream.close();
-        return mapper.readTree(new MessagePack().read(CryptoUtils.decrypt(bytes)).toString());
+        Value read1 = new MessagePack().read(CryptoUtils.decrypt(bytes));
+        return mapper.readTree(read1.toString());
     }
 
     @Override
@@ -203,7 +206,7 @@ public class EventServiceImpl implements IMessageQuickReply {
         if (str.length == 2) {
             return saveAllRanking();
         }
-        return null;
+        return "?";
     }
 
     @Override
@@ -215,7 +218,7 @@ public class EventServiceImpl implements IMessageQuickReply {
             String[] s = message.getRawMessage().split(" ");
             return onMessage(s);
         }
-        return "你谁啊";
+        return "没有权限";
     }
 
     @Override
