@@ -9,9 +9,4 @@ class EventServiceImplTest {
     @Autowired
     EventServiceImpl service;
 
-    @Test
-    void test() {
-        String s = service.onMessage(new String[1]);
-        System.out.println(s);
-    }
 }

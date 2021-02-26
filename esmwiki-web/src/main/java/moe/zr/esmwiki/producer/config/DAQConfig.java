@@ -17,6 +17,6 @@ public class DAQConfig {
 
     @Bean
     public SimpleDateFormat simpleDateFormat() {
-        return new SimpleDateFormat("yyyyMMdd HH:mm");
+        return new SimpleDateFormat("yyyyMMdd-HH:mm");
     }
 }

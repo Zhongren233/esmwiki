@@ -2,6 +2,7 @@ package moe.zr.entry.hekk;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
@@ -16,4 +17,5 @@ public class PointRanking implements Serializable {
     private Integer userId;
     private Integer point;
     private Integer rank;
+    private UserProfile userProfile;
 }

@@ -9,11 +9,9 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import moe.zr.entry.hekk.PointRanking;
 import moe.zr.entry.hekk.ScoreRanking;
-import moe.zr.entry.hekk.UserProfile;
 import moe.zr.enums.EventRankingNavigationType;
 import moe.zr.esmwiki.producer.repository.PointRankingRepository;
 import moe.zr.esmwiki.producer.repository.ScoreRankingRepository;
-import moe.zr.esmwiki.producer.repository.UserProfileRepository;
 import moe.zr.esmwiki.producer.util.CryptoUtils;
 import moe.zr.esmwiki.producer.util.RequestUtils;
 import moe.zr.qqbot.entry.IMessageQuickReply;
@@ -54,17 +52,15 @@ public class EventServiceImpl implements IMessageQuickReply {
     PointRankingService pointRankingService;
     final
     SongRankingService songRankingService;
-    final
-    UserProfileRepository userProfileRepository;
+
     final
     StringRedisTemplate stringRedisTemplate;
 
 
-    public EventServiceImpl(CloseableHttpAsyncClient httpClient, PointRankingRepository pointRankingRepository, ScoreRankingRepository scoreRankingRepository, UserProfileRepository userProfileRepository, PointRankingService pointRankingService, SongRankingService songRankingService, ObjectMapper mapper, RequestUtils requestUtils, StringRedisTemplate stringRedisTemplate) {
+    public EventServiceImpl(CloseableHttpAsyncClient httpClient, PointRankingRepository pointRankingRepository, ScoreRankingRepository scoreRankingRepository, PointRankingService pointRankingService, SongRankingService songRankingService, ObjectMapper mapper, RequestUtils requestUtils, StringRedisTemplate stringRedisTemplate) {
         this.httpClient = httpClient;
         this.pointRankingRepository = pointRankingRepository;
         this.scoreRankingRepository = scoreRankingRepository;
-        this.userProfileRepository = userProfileRepository;
         this.pointRankingService = pointRankingService;
         this.songRankingService = songRankingService;
         this.mapper = mapper;
@@ -114,25 +110,17 @@ public class EventServiceImpl implements IMessageQuickReply {
                         log.warn("状态码不等于200,返回的正文:{}", jsonNode);
                     } else {
                         ArrayNode rankings = (ArrayNode) jsonNode.get("ranking");
-                        ArrayList<UserProfile> userProfiles = new ArrayList<>(20);
                         ArrayList<PointRanking> pointRankings = new ArrayList<>(20);
                         for (JsonNode ranking : rankings) {
                             try {
-                                UserProfile userProfile = mapper.treeToValue(ranking.get("user_profile"), UserProfile.class);
-                                /*
-                                userProfileRepository.updateByUserId(userProfile);//更新用户信息
-                                */
                                 PointRanking pointRanking = mapper.treeToValue(ranking, PointRanking.class);
                                 pointRanking.setEventId(eventId);
                                 pointRankings.add(pointRanking);
-                                userProfile.setEventId(eventId);
-                                userProfiles.add(userProfile);
                             } catch (JsonProcessingException e) {
                                 log.warn("发生异常:{}", e.getMessage());
                             }
                         }
                         pointRankingRepository.insert(pointRankings);
-                        userProfileRepository.insert(userProfiles);
                     }
                 }
 
