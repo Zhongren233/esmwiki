@@ -77,9 +77,15 @@ public class SongRankingServiceImpl implements SongRankingService, IMessageQuick
         record.setRank(value.getRank());
         songRankingRecords.add(record);
         if (value == EventRankingNavigationType.R1) {
+            RankingRecord r2 = ParseUtils.getRecord(node, 1);
+            RankingRecord r3 = ParseUtils.getRecord(node, 2);
             RankingRecord r10 = ParseUtils.getRecord(node, 9);
             r10.setRank(10);
+            r2.setRank(2);
+            r3.setRank(3);
             songRankingRecords.add(r10);
+            songRankingRecords.add(r2);
+            songRankingRecords.add(r3);
         }
     }
 

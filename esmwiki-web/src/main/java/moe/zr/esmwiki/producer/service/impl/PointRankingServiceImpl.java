@@ -5,14 +5,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import moe.zr.entry.hekk.PointRanking;
+import moe.zr.enums.EventRankingNavigationType;
 import moe.zr.enums.IEventPointReward;
 import moe.zr.enums.NormalEventPointReward;
-import moe.zr.enums.EventRankingNavigationType;
 import moe.zr.enums.TourEventPointReward;
 import moe.zr.esmwiki.producer.client.EsmHttpClient;
 import moe.zr.esmwiki.producer.util.RequestUtils;
 import moe.zr.pojo.RankingRecord;
-import moe.zr.qqbot.entry.Message;
 import moe.zr.service.PointRankingService;
 import org.apache.http.client.methods.HttpPost;
 import org.msgpack.type.Value;
@@ -180,7 +179,7 @@ public class PointRankingServiceImpl implements PointRankingService {
                         if (str.length == 3 && "tour".equals(str[2])) {
                             return batchGetTourEventPointRewardCount();
                         }
-                        return batchGetTourEventPointRewardCount();
+                        return batchGetNormalEventPointRewardCount();
                 }
             }
             return "/pr {now} |{count}|{batch} {tour}";

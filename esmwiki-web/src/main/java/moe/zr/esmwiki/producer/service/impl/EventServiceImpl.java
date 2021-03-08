@@ -98,14 +98,15 @@ public class EventServiceImpl implements IMessageQuickReply {
         mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         int totalPages = record.get("total_pages").intValue();
         int eventId = record.get("eventId").intValue();
-        CountDownLatch latch = new CountDownLatch(10);
+        CountDownLatch latch = new CountDownLatch(totalPages);
         for (int i = 1; i <= totalPages; i++) {
             HttpPost httpPost = requestUtils.buildHttpRequest(uri, initContent(i));
             httpClient.execute(httpPost, new FutureCallback<HttpResponse>() {
                 @Override
                 @SneakyThrows
                 public void completed(HttpResponse httpResponse) {
-                    JsonNode jsonNode = countDownAndGet(httpResponse, latch);
+                    latch.countDown();
+                    JsonNode jsonNode = countDownAndGet(httpResponse);
                     if (httpResponse.getStatusLine().getStatusCode() != 200) {
                         log.warn("状态码不等于200,返回的正文:{}", jsonNode);
                     } else {
@@ -147,14 +148,15 @@ public class EventServiceImpl implements IMessageQuickReply {
         mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         int totalPages = record.get("total_pages").intValue();
         int eventId = record.get("eventId").intValue();
-        CountDownLatch latch = new CountDownLatch(10);
+        CountDownLatch latch = new CountDownLatch(totalPages);
         for (int i = 1; i <= totalPages; i++) {
             HttpPost httpPost = requestUtils.buildHttpRequest(uri, initContent(i));
             httpClient.execute(httpPost, new FutureCallback<HttpResponse>() {
                 @Override
                 @SneakyThrows
                 public void completed(HttpResponse httpResponse) {
-                    JsonNode jsonNode = countDownAndGet(httpResponse, latch);
+                    latch.countDown();
+                    JsonNode jsonNode = countDownAndGet(httpResponse);
                     if (httpResponse.getStatusLine().getStatusCode() != 200) {
                         log.warn("状态码不等于200,返回的正文:{}", jsonNode);
                     } else {
@@ -177,21 +179,20 @@ public class EventServiceImpl implements IMessageQuickReply {
                 @Override
                 public void failed(Exception e) {
                     latch.countDown();
-                    System.out.println(e.toString());
+                    log.error("在爬取时发生异常",e);
                 }
 
                 @Override
                 public void cancelled() {
                     latch.countDown();
-                    System.out.println("can");
+                    System.out.println("cancel");
                 }
             });
         }
         latch.await();
     }
 
-    private JsonNode countDownAndGet(HttpResponse httpResponse, CountDownLatch latch) throws IOException, BadPaddingException, IllegalBlockSizeException {
-        latch.countDown();
+    private JsonNode countDownAndGet(HttpResponse httpResponse) throws IOException, BadPaddingException, IllegalBlockSizeException {
         byte[] bytes = new byte[50 * 1000];
         BufferedInputStream bufferedInputStream = new BufferedInputStream(httpResponse.getEntity().getContent());
         int read = bufferedInputStream.read(bytes);
