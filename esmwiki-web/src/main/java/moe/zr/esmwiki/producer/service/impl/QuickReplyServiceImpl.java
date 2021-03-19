@@ -17,7 +17,7 @@ import java.util.Map;
 
 @Service
 @Slf4j
-@Lazy
+@Lazy //为什么这会有一个懒加载 神秘
 public class QuickReplyServiceImpl {
     final
     ObjectMapper mapper;
