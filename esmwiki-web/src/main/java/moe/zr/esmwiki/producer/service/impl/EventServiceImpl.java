@@ -18,12 +18,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
+import moe.zr.esmwiki.producer.util.ReplyUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.msgpack.MessagePack;
 import org.msgpack.type.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -61,7 +63,7 @@ public class EventServiceImpl implements IMessageQuickReply {
     StringRedisTemplate stringRedisTemplate;
 
 
-    public EventServiceImpl(CloseableHttpAsyncClient httpClient, PointRankingRepository pointRankingRepository, ScoreRankingRepository scoreRankingRepository, PointRankingService pointRankingService, SongRankingService songRankingService, ObjectMapper mapper, RequestUtils requestUtils, StringRedisTemplate stringRedisTemplate) {
+    public EventServiceImpl(CloseableHttpAsyncClient httpClient, PointRankingRepository pointRankingRepository, ScoreRankingRepository scoreRankingRepository, PointRankingService pointRankingService, SongRankingService songRankingService, ObjectMapper mapper, RequestUtils requestUtils, StringRedisTemplate stringRedisTemplate, ReplyUtils replyUtils) {
         this.httpClient = httpClient;
         this.pointRankingRepository = pointRankingRepository;
         this.scoreRankingRepository = scoreRankingRepository;
@@ -70,13 +72,17 @@ public class EventServiceImpl implements IMessageQuickReply {
         this.mapper = mapper;
         this.requestUtils = requestUtils;
         this.stringRedisTemplate = stringRedisTemplate;
+        this.replyUtils = replyUtils;
     }
 
-    private String saveAllRanking() {
+    final
+    ReplyUtils replyUtils;
+    public String saveAllRanking() {
         new Thread(() -> {
             try {
                 saveAllPointRanking();
                 saveAllScoreRanking();
+                replyUtils.sendMessage("成功更新数据库");
             } catch (BadPaddingException | InterruptedException | ParseException | IOException | ExecutionException | IllegalBlockSizeException e) {
                 log.error("发生异常", e);
             }

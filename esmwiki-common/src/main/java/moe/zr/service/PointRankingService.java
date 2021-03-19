@@ -1,6 +1,7 @@
 package moe.zr.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import moe.zr.entry.hekk.PointRanking;
 import moe.zr.enums.EventRankingNavigationType;
 import moe.zr.pojo.RankingRecord;
 import moe.zr.qqbot.entry.IMessageQuickReply;
@@ -14,6 +15,8 @@ import java.util.concurrent.ExecutionException;
 
 public interface PointRankingService extends IMessageQuickReply {
     JsonNode getRankingRecord(Integer page) throws IOException, BadPaddingException, IllegalBlockSizeException, ParseException, ExecutionException, InterruptedException;
+
+    List<PointRanking> getPointRankings(Integer integer) throws IllegalBlockSizeException, ExecutionException, InterruptedException, BadPaddingException, IOException;
 
     JsonNode getRankingRecord(EventRankingNavigationType type) throws IOException, BadPaddingException, IllegalBlockSizeException, ParseException, ExecutionException, InterruptedException;
 

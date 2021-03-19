@@ -3,6 +3,7 @@ package moe.zr.esmwiki.producer.service.impl;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import lombok.extern.slf4j.Slf4j;
 import moe.zr.entry.hekk.PointRanking;
 import moe.zr.enums.EventRankingNavigationType;
@@ -49,6 +50,12 @@ public class PointRankingServiceImpl implements PointRankingService {
         this.redisTemplate = redisTemplate;
     }
 
+    public List<PointRanking> getPointRankings(Integer integer) throws IllegalBlockSizeException, ExecutionException, InterruptedException, BadPaddingException, IOException {
+        mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+        JsonNode rankingRecord = getRankingRecord(integer);
+        JavaType javaType = mapper.getTypeFactory().constructParametricType(ArrayList.class, PointRanking.class);
+        return mapper.readValue(rankingRecord.get("ranking").toString(), javaType);
+    }
 
     public JsonNode getRankingRecord(Integer page) throws IOException, BadPaddingException, IllegalBlockSizeException, ExecutionException, InterruptedException {
         HttpPost httpPost = utils.buildHttpRequest(uri, initContent(page));
@@ -76,9 +83,8 @@ public class PointRankingServiceImpl implements PointRankingService {
     public Integer getPointRewardCount(Integer point, Integer startPage) throws IllegalBlockSizeException, ExecutionException, InterruptedException, BadPaddingException, IOException {
         int currentPage = startPage;
         int result = (currentPage - 1) * 20;
-        JavaType javaType = mapper.getTypeFactory().constructParametricType(ArrayList.class, PointRanking.class);
         do {
-            List<PointRanking> ranking = mapper.readValue(getRankingRecord(currentPage).get("ranking").toString(), javaType);
+            List<PointRanking> ranking = getPointRankings(currentPage);
             int size = ranking.size();
             PointRanking lastRanking = ranking.get(size - 1);
             if (lastRanking.getPoint() > point) {

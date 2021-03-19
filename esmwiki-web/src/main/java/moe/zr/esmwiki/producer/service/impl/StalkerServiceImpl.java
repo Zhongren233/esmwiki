@@ -6,13 +6,23 @@ import moe.zr.entry.hekk.ScoreRanking;
 import moe.zr.entry.hekk.UserProfile;
 import moe.zr.esmwiki.producer.repository.PointRankingRepository;
 import moe.zr.esmwiki.producer.repository.ScoreRankingRepository;
+import moe.zr.esmwiki.producer.util.ReplyUtils;
 import moe.zr.qqbot.entry.IMessageQuickReply;
+import moe.zr.service.PointRankingService;
 import moe.zr.service.StalkerService;
 import org.springframework.data.domain.Example;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 @Service
 @Slf4j
@@ -21,10 +31,19 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
     PointRankingRepository pointRankingRepository;
     final
     ScoreRankingRepository scoreRankingRepository;
+    final
+    PointRankingService pointRankingService;
+    final
+    ReplyUtils replyUtils;
+    final
+    StringRedisTemplate redisTemplate;
 
-    public StalkerServiceImpl(PointRankingRepository pointRankingRepository, ScoreRankingRepository scoreRankingRepository) {
+    public StalkerServiceImpl(PointRankingRepository pointRankingRepository, ScoreRankingRepository scoreRankingRepository, PointRankingService pointRankingService, ReplyUtils replyUtils, StringRedisTemplate redisTemplate) {
         this.pointRankingRepository = pointRankingRepository;
         this.scoreRankingRepository = scoreRankingRepository;
+        this.pointRankingService = pointRankingService;
+        this.replyUtils = replyUtils;
+        this.redisTemplate = redisTemplate;
     }
 
     @Override
@@ -49,7 +68,7 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
     public String onMessage(String[] str) {
         int length = str.length;
         if (length < 2) {
-            return "/stk {userName}";
+            return "/stk {userName}  {option}";
         }
         String userArg;
         String option = null;
@@ -69,12 +88,63 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
         return "/stk {userArg} {option}";
     }
 
+    private int getStartPage(PointRanking pointRanking) {
+        Integer userId = pointRanking.getUserId();
+        String key = "Stalker.startPage::" + userId;
+        String s = redisTemplate.opsForValue().get(key);
+        if (s != null) {
+            log.info("成功命中缓存");
+            return Integer.parseInt(s);
+        }
+        return pointRanking.getRank() / 20 + 1;
+    }
+
+    public PointRanking getRealTimePointRanking(PointRanking pointRanking) {
+        int startPage = getStartPage(pointRanking);
+        int currentPage = startPage;
+        int dir = 1;
+        PointRanking realtime = null;
+        do {
+            try {
+                List<PointRanking> pointRankings = pointRankingService.getPointRankings(currentPage);
+                Predicate<PointRanking> pointRankingPredicate = pointRanking1 -> pointRanking1.getUserId().equals(pointRanking.getUserId());
+                Stream<PointRanking> stream = pointRankings.stream();
+                boolean noneMatch = stream.noneMatch(pointRankingPredicate);
+                if (noneMatch) {
+                    PointRanking pointRanking1 = pointRankings.get(0);
+                    if (pointRanking.getPoint() >= pointRanking1.getPoint()) {
+                        currentPage = startPage;
+                        dir = -dir;
+                        log.info("已到达末尾，向前翻页");
+                    }
+                    currentPage += dir;
+                    log.info("翻取{}页没有发现，继续翻取", currentPage);
+                } else {
+                    Optional<PointRanking> any = pointRankings.stream().filter(pointRankingPredicate).findAny();
+                    if (any.isPresent()) {
+                        realtime = any.get();
+                        Integer userId = realtime.getUserId();
+                        String key = "Stalker.startPage::" + userId;
+                        redisTemplate.opsForValue().set(key, String.valueOf(currentPage), 5, TimeUnit.MINUTES);
+                    }
+                    break;
+                }
+            } catch (IllegalBlockSizeException | ExecutionException | InterruptedException | BadPaddingException | IOException e) {
+                replyUtils.sendMessage("在获取实时PointRanking时发生异常,请参见日志");
+                log.error("在获取实时PointRanking时发生异常", e);
+            }
+        } while (true);
+        log.info("实时的PointRanking:{}", realtime);
+        return realtime;
+    }
+
     private String getReturnString(Integer userId) {
         Optional<PointRanking> optionalPointRanking = getPointRanking(userId);
         Optional<ScoreRanking> optionalScoreRanking = getScoreRanking(userId);
         StringBuilder stringBuilder = new StringBuilder();
         if (optionalPointRanking.isPresent()) {
             PointRanking pointRanking = optionalPointRanking.get();
+            pointRanking = getRealTimePointRanking(pointRanking);
             UserProfile userProfile = pointRanking.getUserProfile();
             stringBuilder
                     .append("昵称:").append(userProfile.getName()).append("\n")

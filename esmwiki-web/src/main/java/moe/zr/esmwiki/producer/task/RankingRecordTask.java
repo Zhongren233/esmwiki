@@ -1,17 +1,23 @@
 package moe.zr.esmwiki.producer.task;
 
 import lombok.extern.slf4j.Slf4j;
+import moe.zr.entry.hekk.PointRanking;
+import moe.zr.entry.hekk.ScoreRanking;
 import moe.zr.enums.EventType;
 import moe.zr.esmwiki.producer.repository.PointRankingRecordRepository;
 import moe.zr.esmwiki.producer.repository.ScoreRankingRecordRepository;
+import moe.zr.esmwiki.producer.service.impl.EventServiceImpl;
 import moe.zr.esmwiki.producer.util.ReplyUtils;
 import moe.zr.pojo.PointRankingRecord;
 import moe.zr.pojo.RankingRecord;
 import moe.zr.pojo.SongRankingRecord;
 import moe.zr.qqbot.entry.IMessageQuickReply;
+import moe.zr.qqbot.entry.Message;
 import moe.zr.service.PointRankingService;
 import moe.zr.service.SongRankingService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -28,7 +34,7 @@ import java.util.concurrent.ExecutionException;
 @Configuration
 @Slf4j
 public class RankingRecordTask implements IMessageQuickReply {
-    private boolean flag = false;
+    private boolean flag = true;
     private EventType eventType = EventType.UNIT;
     private final DateFormat dateTimeInstance = DateFormat.getDateTimeInstance();
     final static String cron = "0 */1 * * * ?";
@@ -45,7 +51,10 @@ public class RankingRecordTask implements IMessageQuickReply {
     ReplyUtils replyUtils;
     final
     SimpleDateFormat simpleDateFormat;
-
+    @Autowired
+    MongoTemplate template;
+    @Autowired
+    EventServiceImpl eventService;
 
     public RankingRecordTask(PointRankingService pointRankingService, PointRankingRecordRepository pointRankingRecordRepository, ScoreRankingRecordRepository scoreRankingRecordRepository, SongRankingService songRankingService, ReplyUtils replyUtils, SimpleDateFormat simpleDateFormat) {
         this.pointRankingService = pointRankingService;
@@ -62,6 +71,14 @@ public class RankingRecordTask implements IMessageQuickReply {
             batchGetPointRankingRecord();
             batchGetSongRankingRecord();
         }
+    }
+
+    @Scheduled(cron = "0 1 0/1 * * ?")
+    private void refreshPointRanking() {
+        template.dropCollection(PointRanking.class);
+        template.dropCollection(ScoreRanking.class);
+        log.warn("成功删除集合");
+        eventService.saveAllRanking();
     }
 
     private void batchGetPointRankingRecord() {
@@ -175,14 +192,22 @@ public class RankingRecordTask implements IMessageQuickReply {
                     this.eventType = eventType;
                     log.info("设置活动类型为:{}", eventType.getType());
                     return this.eventType.getType();
-                case "now":
-                    return DateFormat.getDateTimeInstance().format(new Date());
                 case "on":
                     this.flag = true;
                     return "ok";
             }
         }
         return "/task {status} | {settask} yyyyMMdd HH:mm | {on} | {settype} {type} ";
+    }
+
+    @Override
+    public String onMessage(Message message) {
+        Long groupId = message.getGroupId();
+        if (773891409 == groupId) {
+            String[] s = message.getRawMessage().split(" ");
+            return onMessage(s);
+        }
+        return "喵呜";
     }
 
     @Override
