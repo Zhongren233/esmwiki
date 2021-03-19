@@ -1,17 +1,18 @@
 package moe.zr.esmwiki.producer.task;
 
-import lombok.extern.slf4j.Slf4j;
-import moe.zr.esmwiki.producer.util.ReplyUtils;
-import moe.zr.qqbot.entry.IMessageQuickReply;
-import moe.zr.service.MyPageService;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.concurrent.ExecutionException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import java.util.concurrent.ExecutionException;
+import lombok.extern.slf4j.Slf4j;
+import moe.zr.esmwiki.producer.util.ReplyUtils;
+import moe.zr.qqbot.entry.IMessageQuickReply;
+import moe.zr.service.MyPageService;
 
 @EnableScheduling
 @Configuration

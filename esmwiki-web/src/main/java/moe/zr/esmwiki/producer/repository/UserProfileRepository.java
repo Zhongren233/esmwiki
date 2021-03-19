@@ -1,15 +1,9 @@
 package moe.zr.esmwiki.producer.repository;
 
-import lombok.extern.log4j.Log4j;
-import lombok.extern.slf4j.Slf4j;
-import moe.zr.entry.hekk.UserProfile;
-import org.springframework.data.domain.Example;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import moe.zr.entry.hekk.UserProfile;
 
 
 @Repository

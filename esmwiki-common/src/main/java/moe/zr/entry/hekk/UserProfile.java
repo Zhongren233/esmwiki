@@ -1,12 +1,12 @@
 package moe.zr.entry.hekk;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Data;
-import lombok.experimental.Accessors;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.List;
+import lombok.Data;
+import lombok.experimental.Accessors;
 
 @Data
 @Document("userProfile")

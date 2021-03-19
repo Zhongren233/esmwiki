@@ -1,10 +1,32 @@
 package moe.zr.esmwiki.producer.service.impl;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.concurrent.FutureCallback;
+import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.msgpack.MessagePack;
+import org.msgpack.type.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.stereotype.Service;
+
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import moe.zr.entry.hekk.PointRanking;
@@ -18,24 +40,6 @@ import moe.zr.qqbot.entry.IMessageQuickReply;
 import moe.zr.qqbot.entry.Message;
 import moe.zr.service.PointRankingService;
 import moe.zr.service.SongRankingService;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.concurrent.FutureCallback;
-import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
-import org.msgpack.MessagePack;
-import org.msgpack.type.Value;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Service;
-
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 
 @Service
 @Slf4j
@@ -121,7 +125,9 @@ public class EventServiceImpl implements IMessageQuickReply {
                                 log.warn("发生异常:{}", e.getMessage());
                             }
                         }
-                        pointRankingRepository.insert(pointRankings);
+                        //好像不接一下返回值会出现意想不到的bug 具体我也不知道什么情况
+                        List<PointRanking> insert = pointRankingRepository.insert(pointRankings);
+                        log.debug("{}",insert);
                     }
                 }
 
@@ -172,7 +178,6 @@ public class EventServiceImpl implements IMessageQuickReply {
                             }
                         });
                         scoreRankingRepository.insert(scoreRankings);
-                        log.info("成功完成添加");
                     }
                 }
 

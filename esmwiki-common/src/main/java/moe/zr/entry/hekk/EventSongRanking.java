@@ -1,12 +1,11 @@
 package moe.zr.entry.hekk;
 
-import lombok.Data;
-
 import java.util.List;
 
+import lombok.Data;
+
 @Data
-public class EventSongRanking {
-    private static final long serialVersionUID = 2956966050937498082L;
+public class EventSongRanking{
     private Integer eventId;
     private Integer pointRank;
     private Integer eventAssistMultiplyState;
