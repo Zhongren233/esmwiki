@@ -99,25 +99,35 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
         return pointRanking.getRank() / 20 + 1;
     }
 
-    public PointRanking getRealTimePointRanking(PointRanking pointRanking) {
-        int startPage = getStartPage(pointRanking);
+    public PointRanking getRealTimePointRanking(PointRanking pointRankingInDataBase) {
+        int startPage = getStartPage(pointRankingInDataBase);
         int currentPage = startPage;
         int dir = 1;
+        int totalNumberPageGet = 0;
         PointRanking realtime = null;
         do {
             try {
                 List<PointRanking> pointRankings = pointRankingService.getPointRankings(currentPage);
-                Predicate<PointRanking> pointRankingPredicate = pointRanking1 -> pointRanking1.getUserId().equals(pointRanking.getUserId());
+                Predicate<PointRanking> pointRankingPredicate = pointRanking1 -> pointRanking1.getUserId().equals(pointRankingInDataBase.getUserId());
                 Stream<PointRanking> stream = pointRankings.stream();
                 boolean noneMatch = stream.noneMatch(pointRankingPredicate);
                 if (noneMatch) {
-                    PointRanking pointRanking1 = pointRankings.get(0);
-                    if (pointRanking.getPoint() >= pointRanking1.getPoint()) {
+                    if (totalNumberPageGet>=500) {
+                        break;
+                    }
+                    /*
+                        想了一下 还是要写个注释
+                        这个是根据之前的rank向后翻页
+                        直到达到原来的点数还没有翻到人  再向前翻页
+                     */
+                    PointRanking pointRanking = pointRankings.get(0);
+                    if (pointRankingInDataBase.getPoint() >= pointRanking.getPoint()) {
                         currentPage = startPage;
                         dir = -dir;
                         log.info("已到达末尾，向前翻页");
                     }
                     currentPage += dir;
+                    ++totalNumberPageGet;
                     log.info("翻取{}页没有发现，继续翻取", currentPage);
                 } else {
                     Optional<PointRanking> any = pointRankings.stream().filter(pointRankingPredicate).findAny();
@@ -144,8 +154,16 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
         StringBuilder stringBuilder = new StringBuilder();
         if (optionalPointRanking.isPresent()) {
             PointRanking pointRanking = optionalPointRanking.get();
-            pointRanking = getRealTimePointRanking(pointRanking);
             UserProfile userProfile = pointRanking.getUserProfile();
+            if (pointRanking.getPoint()>=10000) {
+                PointRanking realTimePointRanking = getRealTimePointRanking(pointRanking);
+                if (realTimePointRanking != null) {
+                    pointRanking = realTimePointRanking;
+                    userProfile = pointRanking.getUserProfile();
+                }else {
+                    stringBuilder.append("[警告]没有获取到实时PointRanking，可能是因为rank变化过大\n");
+                }
+            }
             stringBuilder
                     .append("昵称:").append(userProfile.getName()).append("\n")
                     .append("id:").append(pointRanking.getUserId()).append("\n")

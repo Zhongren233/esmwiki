@@ -51,18 +51,20 @@ public class RankingRecordTask implements IMessageQuickReply {
     ReplyUtils replyUtils;
     final
     SimpleDateFormat simpleDateFormat;
-    @Autowired
+    final
     MongoTemplate template;
-    @Autowired
+    final
     EventServiceImpl eventService;
 
-    public RankingRecordTask(PointRankingService pointRankingService, PointRankingRecordRepository pointRankingRecordRepository, ScoreRankingRecordRepository scoreRankingRecordRepository, SongRankingService songRankingService, ReplyUtils replyUtils, SimpleDateFormat simpleDateFormat) {
+    public RankingRecordTask(PointRankingService pointRankingService, PointRankingRecordRepository pointRankingRecordRepository, ScoreRankingRecordRepository scoreRankingRecordRepository, SongRankingService songRankingService, ReplyUtils replyUtils, SimpleDateFormat simpleDateFormat, MongoTemplate template, EventServiceImpl eventService) {
         this.pointRankingService = pointRankingService;
         this.pointRankingRecordRepository = pointRankingRecordRepository;
         this.scoreRankingRecordRepository = scoreRankingRecordRepository;
         this.songRankingService = songRankingService;
         this.replyUtils = replyUtils;
         this.simpleDateFormat = simpleDateFormat;
+        this.template = template;
+        this.eventService = eventService;
     }
 
     @Scheduled(cron = cron)
@@ -75,10 +77,12 @@ public class RankingRecordTask implements IMessageQuickReply {
 
     @Scheduled(cron = "0 1 0/1 * * ?")
     private void refreshPointRanking() {
-        template.dropCollection(PointRanking.class);
-        template.dropCollection(ScoreRanking.class);
-        log.warn("成功删除集合");
-        eventService.saveAllRanking();
+        if (flag) {
+            template.dropCollection(PointRanking.class);
+            template.dropCollection(ScoreRanking.class);
+            log.warn("成功删除集合");
+            eventService.saveAllRanking();
+        }
     }
 
     private void batchGetPointRankingRecord() {
