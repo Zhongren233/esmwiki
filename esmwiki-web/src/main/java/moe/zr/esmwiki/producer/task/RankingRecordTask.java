@@ -1,8 +1,8 @@
 package moe.zr.esmwiki.producer.task;
 
 import lombok.extern.slf4j.Slf4j;
-import moe.zr.entry.hekk.PointRanking;
-import moe.zr.entry.hekk.ScoreRanking;
+import moe.zr.pojo.PointRanking;
+import moe.zr.pojo.ScoreRanking;
 import moe.zr.enums.EventType;
 import moe.zr.esmwiki.producer.repository.PointRankingRecordRepository;
 import moe.zr.esmwiki.producer.repository.ScoreRankingRecordRepository;
@@ -15,7 +15,6 @@ import moe.zr.qqbot.entry.IMessageQuickReply;
 import moe.zr.qqbot.entry.Message;
 import moe.zr.service.PointRankingService;
 import moe.zr.service.SongRankingService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;

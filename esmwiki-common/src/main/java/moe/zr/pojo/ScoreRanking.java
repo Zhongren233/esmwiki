@@ -1,4 +1,4 @@
-package moe.zr.entry.hekk;
+package moe.zr.pojo;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;

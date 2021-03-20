@@ -3,7 +3,7 @@ package moe.zr.esmwiki.producer.repository;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
-import moe.zr.entry.hekk.UserProfile;
+import moe.zr.pojo.UserProfile;
 
 
 @Repository

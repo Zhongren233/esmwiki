@@ -1,7 +1,7 @@
 package moe.zr.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import moe.zr.entry.hekk.PointRanking;
+import moe.zr.pojo.PointRanking;
 import moe.zr.enums.EventRankingNavigationType;
 import moe.zr.pojo.RankingRecord;
 import moe.zr.qqbot.entry.IMessageQuickReply;

@@ -1,6 +1,7 @@
 package moe.zr.entry.hekk;
 
 import lombok.Data;
+import moe.zr.pojo.PointRanking;
 
 import java.io.Serializable;
 import java.util.List;

@@ -1,4 +1,4 @@
-package moe.zr.entry.hekk;
+package moe.zr.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 

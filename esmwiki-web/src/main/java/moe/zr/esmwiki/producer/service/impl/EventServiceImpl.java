@@ -25,14 +25,13 @@ import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.msgpack.MessagePack;
 import org.msgpack.type.Value;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import moe.zr.entry.hekk.PointRanking;
-import moe.zr.entry.hekk.ScoreRanking;
+import moe.zr.pojo.PointRanking;
+import moe.zr.pojo.ScoreRanking;
 import moe.zr.enums.EventRankingNavigationType;
 import moe.zr.esmwiki.producer.repository.PointRankingRepository;
 import moe.zr.esmwiki.producer.repository.ScoreRankingRepository;

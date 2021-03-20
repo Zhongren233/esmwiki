@@ -3,6 +3,7 @@ package moe.zr.entry.hekk;
 import java.util.List;
 
 import lombok.Data;
+import moe.zr.pojo.PointRanking;
 
 @Data
 public class EventSongRanking{

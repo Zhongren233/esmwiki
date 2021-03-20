@@ -1,12 +1,13 @@
 package moe.zr.esmwiki.producer.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import moe.zr.entry.hekk.PointRanking;
-import moe.zr.entry.hekk.ScoreRanking;
-import moe.zr.entry.hekk.UserProfile;
+import moe.zr.esmwiki.producer.exception.handler.MultiResultException;
 import moe.zr.esmwiki.producer.repository.PointRankingRepository;
 import moe.zr.esmwiki.producer.repository.ScoreRankingRepository;
 import moe.zr.esmwiki.producer.util.ReplyUtils;
+import moe.zr.pojo.PointRanking;
+import moe.zr.pojo.ScoreRanking;
+import moe.zr.pojo.UserProfile;
 import moe.zr.qqbot.entry.IMessageQuickReply;
 import moe.zr.service.PointRankingService;
 import moe.zr.service.StalkerService;
@@ -18,6 +19,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import java.io.IOException;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +40,11 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
     final
     StringRedisTemplate redisTemplate;
 
-    public StalkerServiceImpl(PointRankingRepository pointRankingRepository, ScoreRankingRepository scoreRankingRepository, PointRankingService pointRankingService, ReplyUtils replyUtils, StringRedisTemplate redisTemplate) {
+    public StalkerServiceImpl(PointRankingRepository pointRankingRepository,
+                              ScoreRankingRepository scoreRankingRepository,
+                              PointRankingService pointRankingService,
+                              ReplyUtils replyUtils,
+                              StringRedisTemplate redisTemplate) {
         this.pointRankingRepository = pointRankingRepository;
         this.scoreRankingRepository = scoreRankingRepository;
         this.pointRankingService = pointRankingService;
@@ -99,6 +105,15 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
         return pointRanking.getRank() / 20 + 1;
     }
 
+    @Override
+    public PointRanking getRealTimePointRanking(Integer userId) {
+        Optional<PointRanking> pointRanking = getPointRanking(userId);
+        if (pointRanking.isPresent()) {
+            return getRealTimePointRanking(pointRanking.get());
+        }
+        throw new NoSuchElementException("似乎还没有记录");
+    }
+
     public PointRanking getRealTimePointRanking(PointRanking pointRankingInDataBase) {
         int startPage = getStartPage(pointRankingInDataBase);
         int currentPage = startPage;
@@ -112,7 +127,7 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
                 Stream<PointRanking> stream = pointRankings.stream();
                 boolean noneMatch = stream.noneMatch(pointRankingPredicate);
                 if (noneMatch) {
-                    if (totalNumberPageGet>=500) {
+                    if (totalNumberPageGet >= 500) {
                         break;
                     }
                     /*
@@ -148,19 +163,19 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
         return realtime;
     }
 
-    private String getReturnString(Integer userId) {
+    public String getReturnString(Integer userId) {
         Optional<PointRanking> optionalPointRanking = getPointRanking(userId);
         Optional<ScoreRanking> optionalScoreRanking = getScoreRanking(userId);
         StringBuilder stringBuilder = new StringBuilder();
         if (optionalPointRanking.isPresent()) {
             PointRanking pointRanking = optionalPointRanking.get();
             UserProfile userProfile = pointRanking.getUserProfile();
-            if (pointRanking.getPoint()>=10000) {
+            if (pointRanking.getPoint() >= 10000) {
                 PointRanking realTimePointRanking = getRealTimePointRanking(pointRanking);
                 if (realTimePointRanking != null) {
                     pointRanking = realTimePointRanking;
                     userProfile = pointRanking.getUserProfile();
-                }else {
+                } else {
                     stringBuilder.append("[警告]没有获取到实时PointRanking，可能是因为rank变化过大\n");
                 }
             }
@@ -179,20 +194,26 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
         }
     }
 
-    private Integer getUserId(String userArg, String option) {
+
+    public Integer getUserId(String userArg, String option) {
+        System.out.println(userArg);
+        System.out.println(option);
         Integer userId;
         if ("-id".equals(option)) {
             try {
                 userId = Integer.valueOf(userArg);
             } catch (NumberFormatException e) {
-                throw new RuntimeException("这不是一个有效数字");
+                throw new RuntimeException("这不是一个有效id");
             }
         } else {
             PointRanking pointRanking = new PointRanking();
             pointRanking.setUserProfile(new UserProfile().setName(userArg));
             List<PointRanking> all = pointRankingRepository.findAll(Example.of(pointRanking));
+            if (all.isEmpty()) {
+                throw new NoSuchElementException("好像没有查询到相关记录呢");
+            }
             if (all.size() != 1) {
-                throw new RuntimeException(multiResult(all));
+                throw new MultiResultException(multiResult(all));
             } else {
                 userId = all.get(0).getUserId();
             }
@@ -202,15 +223,20 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
 
     private String multiResult(List<PointRanking> all) {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("似乎有多个结果，请按照id查询\n");
-        stringBuilder.append("userId|rank|point\n");
-        for (PointRanking ranking : all) {
-            stringBuilder.append(ranking.getUserId());
-            stringBuilder.append("\t");
-            stringBuilder.append(ranking.getRank());
-            stringBuilder.append("\t");
-            stringBuilder.append(ranking.getPoint());
-            stringBuilder.append("\n");
+        int size = all.size();
+        if (size < 20) {
+            stringBuilder.append("似乎有多个结果，请按照id查询\n");
+            stringBuilder.append("userId|rank|point\n");
+            for (PointRanking ranking : all) {
+                stringBuilder.append(ranking.getUserId());
+                stringBuilder.append("\t");
+                stringBuilder.append(ranking.getRank());
+                stringBuilder.append("\t");
+                stringBuilder.append(ranking.getPoint());
+                stringBuilder.append("\n");
+            }
+        } else {
+            stringBuilder.append(String.format("哇哦!总共有%d个结果，换个昵称再试吧!", size));
         }
         return stringBuilder.toString();
     }
