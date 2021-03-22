@@ -1,9 +1,8 @@
 package moe.zr.esmwiki.producer.repository;
 
+import moe.zr.pojo.UserProfile;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
-
-import moe.zr.pojo.UserProfile;
 
 
 @Repository

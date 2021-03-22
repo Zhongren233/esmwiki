@@ -53,7 +53,7 @@ public class QuickReplyServiceImpl {
             return null;
         }
         String v = iMessageQuickReply.onMessage(message);
-        return mapper.createObjectNode().put("reply", v).put("at_sender", true);
+        return mapper.createObjectNode().put("reply", v);
     }
 
 }

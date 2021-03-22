@@ -1,6 +1,6 @@
 package moe.zr.esmwiki.producer.exception.handler;
 
-public class MultiResultException extends RuntimeException{
+public class MultiResultException extends RuntimeException {
     public MultiResultException() {
         super();
     }

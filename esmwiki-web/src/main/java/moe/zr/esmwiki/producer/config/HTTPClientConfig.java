@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class HTTPClientConfig {
     @Bean
-    public CloseableHttpAsyncClient closeableHttpClient()  {
+    public CloseableHttpAsyncClient closeableHttpClient() {
         CloseableHttpAsyncClient aDefault = HttpAsyncClients.createSystem();
         aDefault.start();
         return aDefault;

@@ -1,5 +1,9 @@
 package moe.zr.esmwiki.producer.client;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import lombok.extern.slf4j.Slf4j;
+import moe.zr.entry.hekk.AppMessage;
 import moe.zr.esmwiki.producer.util.CryptoUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -17,12 +21,16 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 @Component
+@Slf4j
 public class EsmHttpClient {
     final
     CloseableHttpAsyncClient httpClient;
+    final
+    ObjectMapper mapper;
 
-    public EsmHttpClient(CloseableHttpAsyncClient client) {
+    public EsmHttpClient(CloseableHttpAsyncClient client, ObjectMapper mapper) {
         this.httpClient = client;
+        this.mapper = mapper;
     }
 
     public Value executeAsMessagepack(HttpPost post) throws IOException, BadPaddingException, IllegalBlockSizeException, ExecutionException, InterruptedException {
@@ -35,7 +43,11 @@ public class EsmHttpClient {
         tmp = Arrays.copyOf(tmp, read);
         Value value = new MessagePack().read(CryptoUtils.decrypt(tmp));
         if (statusCode != 200) {
-            throw new RuntimeException(value.toString());
+            mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
+            String content = value.toString();
+            log.error("请求出现异常，相关AppMessage:{}", content);
+            AppMessage appMessage = mapper.readValue(content, AppMessage.class);
+            throw new RuntimeException(appMessage.toString());
         }
         /*
             close!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

@@ -1,6 +1,7 @@
 package moe.zr.esmwiki.producer.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import moe.zr.esmwiki.producer.config.EventConfig;
 import moe.zr.esmwiki.producer.exception.handler.MultiResultException;
 import moe.zr.esmwiki.producer.repository.PointRankingRepository;
 import moe.zr.esmwiki.producer.repository.ScoreRankingRepository;
@@ -9,6 +10,7 @@ import moe.zr.pojo.PointRanking;
 import moe.zr.pojo.ScoreRanking;
 import moe.zr.pojo.UserProfile;
 import moe.zr.qqbot.entry.IMessageQuickReply;
+import moe.zr.qqbot.entry.Message;
 import moe.zr.service.PointRankingService;
 import moe.zr.service.StalkerService;
 import org.springframework.data.domain.Example;
@@ -39,17 +41,19 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
     ReplyUtils replyUtils;
     final
     StringRedisTemplate redisTemplate;
+    private final EventConfig eventConfig;
 
     public StalkerServiceImpl(PointRankingRepository pointRankingRepository,
                               ScoreRankingRepository scoreRankingRepository,
                               PointRankingService pointRankingService,
                               ReplyUtils replyUtils,
-                              StringRedisTemplate redisTemplate) {
+                              StringRedisTemplate redisTemplate, EventConfig eventConfig) {
         this.pointRankingRepository = pointRankingRepository;
         this.scoreRankingRepository = scoreRankingRepository;
         this.pointRankingService = pointRankingService;
         this.replyUtils = replyUtils;
         this.redisTemplate = redisTemplate;
+        this.eventConfig = eventConfig;
     }
 
     @Override
@@ -65,33 +69,6 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
         ScoreRanking scoreRanking = new ScoreRanking();
         scoreRanking.setUserId(userId);
         return scoreRankingRepository.findOne(Example.of(scoreRanking));
-    }
-
-    /**
-     * /stk {userArg} {option}
-     */
-    @Override
-    public String onMessage(String[] str) {
-        int length = str.length;
-        if (length < 2) {
-            return "/stk {userName}  {option}";
-        }
-        String userArg;
-        String option = null;
-        switch (length) {
-            case 3:
-                option = str[2];
-            case 2:
-                userArg = str[1];
-                Integer userId;
-                try {
-                    userId = getUserId(userArg, option);
-                } catch (RuntimeException exception) {
-                    return exception.getMessage();
-                }
-                return getReturnString(userId);
-        }
-        return "/stk {userArg} {option}";
     }
 
     private int getStartPage(PointRanking pointRanking) {
@@ -111,7 +88,7 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
         if (pointRanking.isPresent()) {
             return getRealTimePointRanking(pointRanking.get());
         }
-        throw new NoSuchElementException("似乎还没有记录");
+        throw new NoSuchElementException("[错误]似乎还没有记录");
     }
 
     public PointRanking getRealTimePointRanking(PointRanking pointRankingInDataBase) {
@@ -163,7 +140,37 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
         return realtime;
     }
 
+    /**
+     * /stk {userArg} {option}
+     */
+    @Override
+    public String onMessage(String[] str) {
+        int length = str.length;
+        if (length < 2) {
+            return "/stk {userName}  {option}";
+        }
+        String userArg;
+        String option = null;
+        switch (length) {
+            case 3:
+                option = str[2];
+            case 2:
+                userArg = str[1];
+                Integer userId;
+                try {
+                    userId = getUserId(userArg, option);
+                } catch (RuntimeException exception) {
+                    return exception.getMessage();
+                }
+                return getReturnString(userId);
+        }
+        return "/stk {userArg} {option}";
+    }
+
     public String getReturnString(Integer userId) {
+        if (!eventConfig.getIsEvent()) {
+            return "当前不是活动时间";
+        }
         Optional<PointRanking> optionalPointRanking = getPointRanking(userId);
         Optional<ScoreRanking> optionalScoreRanking = getScoreRanking(userId);
         StringBuilder stringBuilder = new StringBuilder();
@@ -190,27 +197,25 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
             });
             return stringBuilder.toString();
         } else {
-            return "没有查询到相关记录";
+            return "[错误]没有查询到相关记录";
         }
     }
 
 
     public Integer getUserId(String userArg, String option) {
-        System.out.println(userArg);
-        System.out.println(option);
         Integer userId;
         if ("-id".equals(option)) {
             try {
                 userId = Integer.valueOf(userArg);
             } catch (NumberFormatException e) {
-                throw new RuntimeException("这不是一个有效id");
+                throw new RuntimeException("[错误]" + userArg + "不是一个有效数字id");
             }
         } else {
             PointRanking pointRanking = new PointRanking();
             pointRanking.setUserProfile(new UserProfile().setName(userArg));
             List<PointRanking> all = pointRankingRepository.findAll(Example.of(pointRanking));
             if (all.isEmpty()) {
-                throw new NoSuchElementException("好像没有查询到相关记录呢");
+                throw new NoSuchElementException("[错误]没有查询到相关记录呢");
             }
             if (all.size() != 1) {
                 throw new MultiResultException(multiResult(all));
@@ -236,9 +241,18 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
                 stringBuilder.append("\n");
             }
         } else {
-            stringBuilder.append(String.format("哇哦!总共有%d个结果，换个昵称再试吧!", size));
+            stringBuilder.append(String.format("[警告]总共有%d个结果，换个昵称再试吧!", size));
         }
         return stringBuilder.toString();
+    }
+
+    @Override
+    public String onMessage(Message message) {
+        if (message.getGroupId() == 773891409) {
+            String[] s = message.getRawMessage().split(" ");
+            return onMessage(s);
+        }
+        return null;
     }
 
     @Override

@@ -1,6 +1,5 @@
 package moe.zr.esmwiki.producer.service.impl;
 
-import moe.zr.esmwiki.producer.exception.handler.MultiResultException;
 import moe.zr.esmwiki.producer.repository.BindUserProfileRepository;
 import moe.zr.pojo.BindUserProfile;
 import moe.zr.pojo.PointRanking;
@@ -71,7 +70,7 @@ public class BindServiceImpl implements IMessageQuickReply {
     private String generalRandomInt(String key) {
         int randInt = random.nextInt(89999) + 10000;
         String randomName = String.valueOf(randInt);
-        redisTemplate.opsForValue().set(key, randomName,5, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(key, randomName, 5, TimeUnit.MINUTES);
         return randomName;
     }
 

@@ -11,7 +11,6 @@ class PointPointRankingRecordTaskTest {
     @Test
     void test() {
         String[] s = "/task settask 20210227-12:00".split(" ");
-        System.out.println(task.onMessage(s));
     }
 
 }
