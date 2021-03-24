@@ -124,6 +124,7 @@ public class EventConfig implements IMessageQuickReply {
                 case "status":
                     try {
                         status = EventStatus.valueOf(str[2]);
+                        return status.toString();
                     } catch (IllegalArgumentException e) {
                         return ("Unexpected value: " + str[2]);
                     }
