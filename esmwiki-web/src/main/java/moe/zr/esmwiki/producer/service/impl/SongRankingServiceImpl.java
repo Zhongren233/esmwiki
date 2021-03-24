@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import moe.zr.enums.EventRankingNavigationType;
 import moe.zr.esmwiki.producer.client.EsmHttpClient;
+import moe.zr.esmwiki.producer.config.EventConfig;
 import moe.zr.esmwiki.producer.util.ParseUtils;
 import moe.zr.esmwiki.producer.util.RequestUtils;
 import moe.zr.pojo.RankingRecord;
@@ -11,6 +12,7 @@ import moe.zr.qqbot.entry.IMessageQuickReply;
 import moe.zr.service.SongRankingService;
 import org.apache.http.client.methods.HttpPost;
 import org.msgpack.type.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.BadPaddingException;
@@ -31,11 +33,15 @@ public class SongRankingServiceImpl implements SongRankingService, IMessageQuick
     EsmHttpClient httpClient;
     final
     RequestUtils utils;
+    final
+    EventConfig config;
 
-    public SongRankingServiceImpl(RequestUtils utils, EsmHttpClient httpClient, ObjectMapper mapper) {
+
+    public SongRankingServiceImpl(RequestUtils utils, EsmHttpClient httpClient, ObjectMapper mapper, EventConfig config) {
         this.utils = utils;
         this.httpClient = httpClient;
         this.mapper = mapper;
+        this.config = config;
     }
 
     @Override
@@ -96,9 +102,11 @@ public class SongRankingServiceImpl implements SongRankingService, IMessageQuick
     private String initContent(EventRankingNavigationType type) {
         return utils.basicRequest() + "&event_ranking_navigation_type_id=" + type.getRank();
     }
-
     @Override
     public String onMessage(String[] str) {
+        if (config.getIsUnAvailable()) {
+            return "功能暂不可用";
+        }
         try {
             StringBuilder stringBuilder = new StringBuilder();
             List<RankingRecord> pointRankingRecords = getSongRankingRecords();

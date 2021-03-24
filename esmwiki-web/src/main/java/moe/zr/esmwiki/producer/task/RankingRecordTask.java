@@ -1,6 +1,7 @@
 package moe.zr.esmwiki.producer.task;
 
 import lombok.extern.slf4j.Slf4j;
+import moe.zr.enums.EventStatus;
 import moe.zr.enums.EventType;
 import moe.zr.esmwiki.producer.config.EventConfig;
 import moe.zr.esmwiki.producer.repository.PointRankingRecordRepository;
@@ -70,7 +71,7 @@ public class RankingRecordTask {
 
     @Scheduled(cron = cron)
     private void task() {
-        if (eventConfig.getIsEvent()) {
+        if (eventConfig.getIsOpen()) {
             batchGetPointRankingRecord();
             batchGetSongRankingRecord();
         }
@@ -78,7 +79,7 @@ public class RankingRecordTask {
 
     @Scheduled(cron = "0 1 0/1 * * ?")
     private void refreshPointRanking() {
-        if (eventConfig.getIsEvent()) {
+        if (eventConfig.getIsOpen()) {
             template.dropCollection(PointRanking.class);
             template.dropCollection(ScoreRanking.class);
             log.warn("成功删除集合");
@@ -115,7 +116,7 @@ public class RankingRecordTask {
 
     @Scheduled(cron = "0 0 0 1/1 * ? ")
     public void dailyReport() {
-        if (eventConfig.getIsEvent()) {
+        if (eventConfig.getIsOpen()) {
             String message = "今天的活动信息" +
                     "\n" + "\n" +
                     sendTodayEventPointRankingInfo() +
@@ -146,7 +147,7 @@ public class RankingRecordTask {
     private void exceptionHandle(Exception e) {
         replyUtils.sendMessage("我罢工了");
         replyUtils.sendMessage(e.getMessage());
-        eventConfig.setIsEvent(false);
+        eventConfig.setStatus(EventStatus.End);
     }
 
 }

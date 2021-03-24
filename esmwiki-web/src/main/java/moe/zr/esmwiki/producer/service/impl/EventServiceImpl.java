@@ -108,7 +108,7 @@ public class EventServiceImpl implements IMessageQuickReply {
         CountDownLatch latch = new CountDownLatch(totalPages);
         for (int i = 1; i <= totalPages; i++) {
             HttpPost httpPost = requestUtils.buildHttpRequest(uri, initContent(i));
-            httpClient.execute(httpPost, new FutureCallback<HttpResponse>() {
+            httpClient.execute(httpPost, new FutureCallback<>() {
                 @Override
                 @SneakyThrows
                 public void completed(HttpResponse httpResponse) {
@@ -160,7 +160,7 @@ public class EventServiceImpl implements IMessageQuickReply {
         CountDownLatch latch = new CountDownLatch(totalPages);
         for (int i = 1; i <= totalPages; i++) {
             HttpPost httpPost = requestUtils.buildHttpRequest(uri, initContent(i));
-            httpClient.execute(httpPost, new FutureCallback<HttpResponse>() {
+            httpClient.execute(httpPost, new FutureCallback<>() {
                 @Override
                 @SneakyThrows
                 public void completed(HttpResponse httpResponse) {

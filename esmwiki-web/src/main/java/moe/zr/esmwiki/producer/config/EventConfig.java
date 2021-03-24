@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import moe.zr.enums.EventStatus;
 import moe.zr.enums.EventType;
 import moe.zr.esmwiki.producer.util.ReplyUtils;
 import moe.zr.qqbot.entry.IMessageQuickReply;
@@ -30,8 +31,9 @@ public class EventConfig implements IMessageQuickReply {
     private Date date;
     private EventType eventType;
     private final DateFormat dateTimeInstance = DateFormat.getDateTimeInstance();
-    private Boolean isEvent = false;
     private Timer timer = new Timer();
+    private EventStatus status;
+
     final
     StringRedisTemplate redisTemplate;
     final
@@ -40,6 +42,7 @@ public class EventConfig implements IMessageQuickReply {
     ReplyUtils replyUtils;
     final
     ObjectMapper mapper;
+
 
     public EventConfig(SimpleDateFormat simpleDateFormat, ReplyUtils replyUtils, ObjectMapper mapper, StringRedisTemplate redisTemplate) {
         this.simpleDateFormat = simpleDateFormat;
@@ -54,30 +57,34 @@ public class EventConfig implements IMessageQuickReply {
         String eventConfig = redisTemplate.opsForValue().get("Event:Config");
         String s = "没有配置信息，请设置配置";
         if (eventConfig != null) {
-            s = "成功从redis中获得配置";
-            log.info(s);
+            s = "成功从redis中获得配置:{}";
             JsonNode jsonNode = mapper.readTree(eventConfig);
-            isEvent = jsonNode.get("is_event").asBoolean();
+            log.info(s,jsonNode);
             String type = jsonNode.get("event_type").asText();
             this.date = simpleDateFormat.parse(jsonNode.get("date").asText());
             eventType = EventType.getEventType(type);
+            status = EventStatus.valueOf(jsonNode.get("status").asText());
             timer.schedule(new TimerTask() {
                 @Override
                 public void run() {
-                    isEvent = true;
+                    status = EventStatus.Open;
                 }
             }, this.date);
         }
         replyUtils.sendMessage(s);
-        log.info(s);
+        log.info(this.toString());
     }
 
     public void setDate(Date date) {
         this.date = date;
+        saveConfig();
+    }
+
+    private void saveConfig() {
         ObjectNode objectNode = mapper.createObjectNode();
         objectNode.put("date", simpleDateFormat.format(date));
         objectNode.put("event_type", eventType.getType());
-        objectNode.put("is_event", isEvent);
+        objectNode.put("status", status.name());
         redisTemplate.opsForValue().set("Event:Config", objectNode.toString());
     }
 
@@ -102,7 +109,7 @@ public class EventConfig implements IMessageQuickReply {
                         @Override
                         public void run() {
                             setDate(null);
-                            isEvent = true;
+                            status = EventStatus.Open;
                         }
                     }, date);
                     return dateTimeInstance.format(date);
@@ -114,16 +121,11 @@ public class EventConfig implements IMessageQuickReply {
                     this.eventType = eventType;
                     log.info("设置活动类型为:{}", eventType.getType());
                     return this.eventType.getType();
-                case "event":
-                    switch (str[2]) {
-                        case "on":
-                            isEvent = true;
-                            return "true";
-                        case "off":
-                            isEvent = false;
-                            return "false";
-                        default:
-                            return ("Unexpected value: " + str[2]);
+                case "status":
+                    try {
+                        status = EventStatus.valueOf(str[2]);
+                    } catch (IllegalArgumentException e) {
+                        return ("Unexpected value: " + str[2]);
                     }
                 default:
                     return ("Unexpected value: " + str[1]);
@@ -132,14 +134,6 @@ public class EventConfig implements IMessageQuickReply {
         return toString();
     }
 
-    @Override
-    public String toString() {
-        return "EventConfig{" +
-                "date=" + date +
-                ", eventType=" + eventType +
-                ", isEvent=" + isEvent +
-                '}';
-    }
 
     @Override
     public String onMessage(Message message) {
@@ -150,6 +144,51 @@ public class EventConfig implements IMessageQuickReply {
         return null;
     }
 
+    @Override
+    public String toString() {
+        return "EventConfig{" +
+                "date=" + date +
+                ", eventType=" + eventType +
+                ", status=" + status +
+                '}';
+    }
+
+    public void setStatus(EventStatus status) {
+        this.status = status;
+        saveConfig();
+    }
+
+    public void setUnavailable() {
+        if (EventStatus.Open.equals(this.getStatus())) {
+            setStatus(EventStatus.End);
+            return;
+        }
+
+        if (EventStatus.CountingEnd.equals(this.getStatus())) {
+            setStatus(EventStatus.Announce);
+        }
+
+    }
+
+    public boolean getIsOpen() {
+        return status.equals(EventStatus.Open);
+    }
+
+    public boolean getIsAnnounce() {
+        return status.equals(EventStatus.Announce);
+    }
+
+    public boolean getIsEnd() {
+        return status.equals(EventStatus.End);
+    }
+
+    public boolean getIsCountingEnd() {
+        return status.equals(EventStatus.CountingEnd);
+    }
+
+    public boolean getIsUnAvailable() {
+        return status.equals(EventStatus.End) || status.equals(EventStatus.Announce);
+    }
     @Override
     public String commandPrefix() {
         return "/config";

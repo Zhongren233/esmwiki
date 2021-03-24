@@ -1,11 +1,13 @@
 package moe.zr.esmwiki.producer.service.impl;
 
+import moe.zr.esmwiki.producer.config.EventConfig;
 import moe.zr.esmwiki.producer.repository.BindUserProfileRepository;
 import moe.zr.pojo.BindUserProfile;
 import moe.zr.pojo.PointRanking;
 import moe.zr.qqbot.entry.IMessageQuickReply;
 import moe.zr.qqbot.entry.Message;
 import moe.zr.service.StalkerService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -23,12 +25,15 @@ public class BindServiceImpl implements IMessageQuickReply {
     Random random;
     final
     BindUserProfileRepository repository;
+    final
+    EventConfig config;
 
-    public BindServiceImpl(StalkerServiceImpl stalkerService, StringRedisTemplate redisTemplate, BindUserProfileRepository repository) {
+    public BindServiceImpl(StalkerServiceImpl stalkerService, StringRedisTemplate redisTemplate, BindUserProfileRepository repository, EventConfig config) {
         random = new Random();
         this.stalkerService = stalkerService;
         this.redisTemplate = redisTemplate;
         this.repository = repository;
+        this.config = config;
     }
 
     /**
@@ -76,9 +81,9 @@ public class BindServiceImpl implements IMessageQuickReply {
 
     @Override
     public String onMessage(Message message) {
-        Long userId = message.getUserId();
-        String rawMessage = message.getRawMessage();
-        String s = rawMessage + " " + userId;
+        if (config.getIsUnAvailable())
+            return "绑定功能暂不可用";
+        String s = message.getRawMessage() + " " +  message.getUserId();
         String[] split = s.split(" ");
         return onMessage(split);
     }

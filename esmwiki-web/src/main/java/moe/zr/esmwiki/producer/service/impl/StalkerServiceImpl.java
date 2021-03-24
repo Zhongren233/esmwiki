@@ -168,7 +168,7 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
     }
 
     public String getReturnString(Integer userId) {
-        if (!eventConfig.getIsEvent()) {
+        if (eventConfig.getIsUnAvailable()) {
             return "当前不是活动时间";
         }
         Optional<PointRanking> optionalPointRanking = getPointRanking(userId);

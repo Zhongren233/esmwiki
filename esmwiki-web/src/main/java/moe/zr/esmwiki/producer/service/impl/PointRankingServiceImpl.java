@@ -10,12 +10,14 @@ import moe.zr.enums.IEventPointReward;
 import moe.zr.enums.NormalEventPointReward;
 import moe.zr.enums.TourEventPointReward;
 import moe.zr.esmwiki.producer.client.EsmHttpClient;
+import moe.zr.esmwiki.producer.config.EventConfig;
 import moe.zr.esmwiki.producer.util.RequestUtils;
 import moe.zr.pojo.PointRanking;
 import moe.zr.pojo.RankingRecord;
 import moe.zr.service.PointRankingService;
 import org.apache.http.client.methods.HttpPost;
 import org.msgpack.type.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -42,12 +44,14 @@ public class PointRankingServiceImpl implements PointRankingService {
     RequestUtils utils;
     final
     StringRedisTemplate redisTemplate;
+    private final EventConfig config;
 
-    public PointRankingServiceImpl(RequestUtils utils, EsmHttpClient httpClient, ObjectMapper mapper, StringRedisTemplate redisTemplate) {
+    public PointRankingServiceImpl(RequestUtils utils, EsmHttpClient httpClient, ObjectMapper mapper, StringRedisTemplate redisTemplate, EventConfig eventConfig) {
         this.utils = utils;
         this.httpClient = httpClient;
         this.mapper = mapper;
         this.redisTemplate = redisTemplate;
+        this.config = eventConfig;
     }
 
     public List<PointRanking> getPointRankings(Integer integer) throws IllegalBlockSizeException, ExecutionException, InterruptedException, BadPaddingException, IOException {
@@ -159,6 +163,9 @@ public class PointRankingServiceImpl implements PointRankingService {
 
     @Override
     public String onMessage(String[] str) {
+        if (config.getIsUnAvailable()) {
+            return "功能暂不可用";
+        }
         try {
             if (str.length > 1) {
                 switch (str[1]) {
