@@ -38,8 +38,8 @@ public class RequestUtils {
 
     public HttpPost buildHttpRequest(String uri, String content) throws BadPaddingException, IllegalBlockSizeException {
         HttpPost httpPost = new HttpPost(uri);
-        log.info(uri);
-        log.info(content);
+        log.debug("请求的地址:{}",uri);
+        log.debug("请求的参数(未加密):{}",content);
         addHeader(httpPost);
         ByteArrayEntity byteArrayEntity = new ByteArrayEntity(CryptoUtils.encrypt(content));
         httpPost.setEntity(byteArrayEntity);
