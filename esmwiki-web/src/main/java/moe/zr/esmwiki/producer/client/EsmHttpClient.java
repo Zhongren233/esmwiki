@@ -67,7 +67,17 @@ public class EsmHttpClient {
         Future<HttpResponse> execute = httpClient.execute(post, null);
         HttpResponse httpResponse = execute.get();
         if (httpResponse.getStatusLine().getStatusCode() != 200) {
-            throw new RuntimeException("状态码不为200");
+            try {
+                BufferedInputStream bufferedInputStream = new BufferedInputStream(httpResponse.getEntity().getContent());
+                byte[] bytes = new byte[300 * 1000];
+                int read = bufferedInputStream.read(bytes);
+                bytes = Arrays.copyOf(bytes, read);
+                Value read1 = new MessagePack().read(CryptoUtils.decrypt(bytes));
+                log.error("状态码不为200,可用的信息:{}",read1.toString());
+            } catch (IOException | IllegalBlockSizeException | BadPaddingException e) {
+                e.printStackTrace();
+            }
+            throw new RuntimeException("状态码不为200,可用的信息已提供在日志");
         }
     }
 

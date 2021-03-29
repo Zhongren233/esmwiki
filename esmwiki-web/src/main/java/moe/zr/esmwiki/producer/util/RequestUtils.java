@@ -1,5 +1,6 @@
 package moe.zr.esmwiki.producer.util;
 
+import lombok.extern.slf4j.Slf4j;
 import moe.zr.esmwiki.producer.config.DAQConfig;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ByteArrayEntity;
@@ -11,6 +12,7 @@ import javax.crypto.IllegalBlockSizeException;
 import java.util.UUID;
 
 @Component
+@Slf4j
 public class RequestUtils {
     final
     DAQConfig config;
@@ -24,18 +26,20 @@ public class RequestUtils {
     }
 
     public String basicRequest() {
-        return "msg_id=" + UUID.randomUUID().toString() +
-                "&major=" + major +
-                "&resMd5=" + resMd5 +
-                "&packageName=apple&platform=iOS" +   //这玩意不能动
-                "&login_type=mobile" +
-                "&heiToken=" + config.getToken() +
-                "&session=" + config.getSession() +
-                "&login_type=mobile";
+        return "msg_id=" +UUID.randomUUID()+
+                "&major="+major +
+                "&resMd5="+resMd5 +
+                "&packageName=apple" + //这俩也不能动
+                "&platform=iOS" + //这俩也不能动
+                "&session="+config.getSession() +
+                "&hei_token="+config.getToken() +
+                "&login_type=mobile"; //这个不能动
     }
 
     public HttpPost buildHttpRequest(String uri, String content) throws BadPaddingException, IllegalBlockSizeException {
         HttpPost httpPost = new HttpPost(uri);
+        log.info(uri);
+        log.info(content);
         addHeader(httpPost);
         ByteArrayEntity byteArrayEntity = new ByteArrayEntity(CryptoUtils.encrypt(content));
         httpPost.setEntity(byteArrayEntity);
@@ -45,6 +49,7 @@ public class RequestUtils {
     private void addHeader(HttpPost request) {
         request.addHeader("Authorization", "Token " + config.getToken());
         request.addHeader("Content-Type", "application/octet-stream");
+        request.addHeader("X-Game-Version", major);//？这啥啊
     }
 
 }
