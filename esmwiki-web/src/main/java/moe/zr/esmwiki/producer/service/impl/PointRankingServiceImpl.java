@@ -129,7 +129,7 @@ public class PointRankingServiceImpl implements PointRankingService {
         return count;
     }
 
-    public String batchGetNormalEventPointRewardCount() throws  ExecutionException, IllegalBlockSizeException, BadPaddingException, IOException {
+    public String batchGetNormalEventPointRewardCount() throws ExecutionException, IllegalBlockSizeException, BadPaddingException, IOException {
         StringBuilder stringBuilder = new StringBuilder();
         for (NormalEventPointReward normalEventPointReward : NormalEventPointReward.values()) {
             stringBuilder.append(normalEventPointReward.getGear()).append("人数:");
