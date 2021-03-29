@@ -33,10 +33,17 @@ public class EsmHttpClient {
         this.mapper = mapper;
     }
 
-    public Value executeAsMessagepack(HttpPost post) throws IOException, BadPaddingException, IllegalBlockSizeException, ExecutionException, InterruptedException {
+    public Value executeAsMessagepack(HttpPost post) throws IOException, BadPaddingException, IllegalBlockSizeException, ExecutionException {
         byte[] tmp = new byte[30 * 1000];
         Future<HttpResponse> execute = httpClient.execute(post, null);
-        HttpResponse httpResponse = execute.get();
+        HttpResponse httpResponse;
+        try {
+            httpResponse = execute.get();
+        } catch (InterruptedException e) {
+            log.error("", e);
+            throw new RuntimeException("中断异常");
+        }
+        assert httpResponse != null;
         int statusCode = httpResponse.getStatusLine().getStatusCode();
         BufferedInputStream bufferedInputStream = new BufferedInputStream(httpResponse.getEntity().getContent());
         int read = bufferedInputStream.read(tmp);

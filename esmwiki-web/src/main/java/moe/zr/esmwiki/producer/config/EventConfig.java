@@ -59,7 +59,7 @@ public class EventConfig implements IMessageQuickReply {
         if (eventConfig != null) {
             s = "成功从redis中获得配置:{}";
             JsonNode jsonNode = mapper.readTree(eventConfig);
-            log.info(s,jsonNode);
+            log.info(s, jsonNode);
             String type = jsonNode.get("event_type").asText();
             this.date = simpleDateFormat.parse(jsonNode.get("date").asText());
             eventType = EventType.getEventType(type);
@@ -190,6 +190,7 @@ public class EventConfig implements IMessageQuickReply {
     public boolean getIsUnAvailable() {
         return status.equals(EventStatus.End) || status.equals(EventStatus.Announce);
     }
+
     @Override
     public String commandPrefix() {
         return "/config";

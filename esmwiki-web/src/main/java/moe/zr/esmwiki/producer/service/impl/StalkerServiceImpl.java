@@ -104,7 +104,8 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
                 Stream<PointRanking> stream = pointRankings.stream();
                 boolean noneMatch = stream.noneMatch(pointRankingPredicate);
                 if (noneMatch) {
-                    if (totalNumberPageGet >= 500) {
+                    //修改了一下超时设置
+                    if (totalNumberPageGet >= 200) {
                         break;
                     }
                     /*

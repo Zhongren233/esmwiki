@@ -7,7 +7,6 @@ import moe.zr.pojo.PointRanking;
 import moe.zr.qqbot.entry.IMessageQuickReply;
 import moe.zr.qqbot.entry.Message;
 import moe.zr.service.StalkerService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -83,7 +82,7 @@ public class BindServiceImpl implements IMessageQuickReply {
     public String onMessage(Message message) {
         if (config.getIsUnAvailable())
             return "绑定功能暂不可用";
-        String s = message.getRawMessage() + " " +  message.getUserId();
+        String s = message.getRawMessage() + " " + message.getUserId();
         String[] split = s.split(" ");
         return onMessage(split);
     }

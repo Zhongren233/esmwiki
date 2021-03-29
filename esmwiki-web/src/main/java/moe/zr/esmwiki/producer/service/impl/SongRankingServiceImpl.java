@@ -12,7 +12,6 @@ import moe.zr.qqbot.entry.IMessageQuickReply;
 import moe.zr.service.SongRankingService;
 import org.apache.http.client.methods.HttpPost;
 import org.msgpack.type.Value;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.BadPaddingException;
@@ -45,7 +44,7 @@ public class SongRankingServiceImpl implements SongRankingService, IMessageQuick
     }
 
     @Override
-    public JsonNode getSongRankingRecord(Integer page) throws IOException, BadPaddingException, IllegalBlockSizeException, ExecutionException, InterruptedException {
+    public JsonNode getSongRankingRecord(Integer page) throws IOException, BadPaddingException, IllegalBlockSizeException, ExecutionException {
         HttpPost httpPost = utils.buildHttpRequest(uri, initContent(page));
         Value execute;
         try {
@@ -57,7 +56,7 @@ public class SongRankingServiceImpl implements SongRankingService, IMessageQuick
     }
 
     @Override
-    public JsonNode getSongRankingRecord(EventRankingNavigationType type) throws IOException, BadPaddingException, IllegalBlockSizeException, InterruptedException, ExecutionException {
+    public JsonNode getSongRankingRecord(EventRankingNavigationType type) throws IOException, BadPaddingException, IllegalBlockSizeException, ExecutionException {
         HttpPost httpPost = utils.buildHttpRequest(uri, initContent(type));
         Value execute;
         try {
@@ -69,7 +68,7 @@ public class SongRankingServiceImpl implements SongRankingService, IMessageQuick
     }
 
     @Override
-    public List<RankingRecord> getSongRankingRecords() throws BadPaddingException, IOException, IllegalBlockSizeException, ExecutionException, InterruptedException {
+    public List<RankingRecord> getSongRankingRecords() throws BadPaddingException, IOException, IllegalBlockSizeException, ExecutionException {
         ArrayList<RankingRecord> pointRankingRecords = new ArrayList<>();
         for (EventRankingNavigationType value : EventRankingNavigationType.values()) {
             JsonNode node = getSongRankingRecord(value);
@@ -86,12 +85,12 @@ public class SongRankingServiceImpl implements SongRankingService, IMessageQuick
             RankingRecord r2 = ParseUtils.getRecord(node, 1);
             RankingRecord r3 = ParseUtils.getRecord(node, 2);
             RankingRecord r10 = ParseUtils.getRecord(node, 9);
-            r10.setRank(10);
             r2.setRank(2);
             r3.setRank(3);
-            songRankingRecords.add(r10);
+            r10.setRank(10);
             songRankingRecords.add(r2);
             songRankingRecords.add(r3);
+            songRankingRecords.add(r10);
         }
     }
 
@@ -102,6 +101,7 @@ public class SongRankingServiceImpl implements SongRankingService, IMessageQuick
     private String initContent(EventRankingNavigationType type) {
         return utils.basicRequest() + "&event_ranking_navigation_type_id=" + type.getRank();
     }
+
     @Override
     public String onMessage(String[] str) {
         if (config.getIsUnAvailable()) {

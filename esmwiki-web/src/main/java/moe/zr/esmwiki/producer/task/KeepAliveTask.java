@@ -1,7 +1,6 @@
 package moe.zr.esmwiki.producer.task;
 
 import lombok.extern.slf4j.Slf4j;
-import moe.zr.enums.EventStatus;
 import moe.zr.esmwiki.producer.util.ReplyUtils;
 import moe.zr.qqbot.entry.IMessageQuickReply;
 import moe.zr.service.MyPageService;

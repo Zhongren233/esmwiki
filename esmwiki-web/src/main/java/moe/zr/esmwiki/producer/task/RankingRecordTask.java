@@ -121,7 +121,9 @@ public class RankingRecordTask {
                     "\n" + "\n" +
                     sendTodayEventPointRankingInfo() +
                     "\n" +
-                    sendTodayEventPointRewardInfo();
+                    sendTodayEventPointRewardInfo() +
+                    "\n" +
+                    sendTodayEventSongRankingInfo();
             log.info(message);
             replyUtils.sendMessage(message);
         }
@@ -142,6 +144,11 @@ public class RankingRecordTask {
             exceptionHandle(e);
             return "获取档位人数出错,可用的信息:" + e.getMessage();
         }
+    }
+
+    private String sendTodayEventSongRankingInfo() {
+        String[] a = {"/sr"};
+        return songRankingService.onMessage(a);
     }
 
     private void exceptionHandle(Exception e) {

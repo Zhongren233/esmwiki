@@ -17,7 +17,6 @@ import moe.zr.pojo.RankingRecord;
 import moe.zr.service.PointRankingService;
 import org.apache.http.client.methods.HttpPost;
 import org.msgpack.type.Value;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -54,27 +53,27 @@ public class PointRankingServiceImpl implements PointRankingService {
         this.config = eventConfig;
     }
 
-    public List<PointRanking> getPointRankings(Integer integer) throws IllegalBlockSizeException, ExecutionException, InterruptedException, BadPaddingException, IOException {
+    public List<PointRanking> getPointRankings(Integer integer) throws IllegalBlockSizeException, ExecutionException, BadPaddingException, IOException {
         mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         JsonNode rankingRecord = getRankingRecord(integer);
         JavaType javaType = mapper.getTypeFactory().constructParametricType(ArrayList.class, PointRanking.class);
         return mapper.readValue(rankingRecord.get("ranking").toString(), javaType);
     }
 
-    public JsonNode getRankingRecord(Integer page) throws IOException, BadPaddingException, IllegalBlockSizeException, ExecutionException, InterruptedException {
+    public JsonNode getRankingRecord(Integer page) throws IOException, BadPaddingException, IllegalBlockSizeException, ExecutionException {
         HttpPost httpPost = utils.buildHttpRequest(uri, initContent(page));
         Value execute = httpClient.executeAsMessagepack(httpPost);
         return mapper.readTree(execute.toString());
     }
 
-    public JsonNode getRankingRecord(EventRankingNavigationType type) throws IOException, BadPaddingException, IllegalBlockSizeException, ExecutionException, InterruptedException {
+    public JsonNode getRankingRecord(EventRankingNavigationType type) throws IOException, BadPaddingException, IllegalBlockSizeException, ExecutionException {
         HttpPost httpPost = utils.buildHttpRequest(uri, initContent(type));
         Value execute = httpClient.executeAsMessagepack(httpPost);
         return mapper.readTree(execute.toString());
     }
 
     @Override
-    public List<RankingRecord> getRankingRecords() throws BadPaddingException, IOException, IllegalBlockSizeException, ExecutionException, InterruptedException {
+    public List<RankingRecord> getRankingRecords() throws BadPaddingException, IOException, IllegalBlockSizeException, ExecutionException {
         ArrayList<RankingRecord> pointRankingRecords = new ArrayList<>();
         for (EventRankingNavigationType value : EventRankingNavigationType.values()) {
             JsonNode node = getRankingRecord(value);
@@ -84,7 +83,7 @@ public class PointRankingServiceImpl implements PointRankingService {
     }
 
     @Override
-    public Integer getPointRewardCount(Integer point, Integer startPage) throws IllegalBlockSizeException, ExecutionException, InterruptedException, BadPaddingException, IOException {
+    public Integer getPointRewardCount(Integer point, Integer startPage) throws IllegalBlockSizeException, ExecutionException, BadPaddingException, IOException {
         int currentPage = startPage;
         int result = (currentPage - 1) * 20;
         do {
@@ -111,7 +110,7 @@ public class PointRankingServiceImpl implements PointRankingService {
             return result - 1;
     }
 
-    public Integer getPointRewardCount(Integer point) throws InterruptedException, ExecutionException, BadPaddingException, IllegalBlockSizeException, IOException {
+    public Integer getPointRewardCount(Integer point) throws ExecutionException, BadPaddingException, IllegalBlockSizeException, IOException {
         String key = "pointRankingService.getPointRewardCount::";
         String s = redisTemplate.opsForValue().get(key + point);
         Integer count;
@@ -130,7 +129,7 @@ public class PointRankingServiceImpl implements PointRankingService {
         return count;
     }
 
-    public String batchGetNormalEventPointRewardCount() throws InterruptedException, ExecutionException, IllegalBlockSizeException, BadPaddingException, IOException {
+    public String batchGetNormalEventPointRewardCount() throws  ExecutionException, IllegalBlockSizeException, BadPaddingException, IOException {
         StringBuilder stringBuilder = new StringBuilder();
         for (NormalEventPointReward normalEventPointReward : NormalEventPointReward.values()) {
             stringBuilder.append(normalEventPointReward.getGear()).append("人数:");
@@ -141,7 +140,7 @@ public class PointRankingServiceImpl implements PointRankingService {
         return stringBuilder.toString();
     }
 
-    public String batchGetTourEventPointRewardCount() throws InterruptedException, ExecutionException, IllegalBlockSizeException, BadPaddingException, IOException {
+    public String batchGetTourEventPointRewardCount() throws ExecutionException, IllegalBlockSizeException, BadPaddingException, IOException {
         StringBuilder stringBuilder = new StringBuilder();
         for (TourEventPointReward normalEventPointReward : TourEventPointReward.values()) {
             stringBuilder.append(normalEventPointReward.getGear()).append("人数:");
