@@ -6,8 +6,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
 import moe.zr.esmwiki.producer.client.EsmHttpClient;
+import moe.zr.esmwiki.producer.config.QuickReplyConfig;
 import moe.zr.qqbot.entry.IMessageQuickReply;
 import moe.zr.qqbot.entry.Message;
+import moe.zr.service.SudoService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -17,20 +20,19 @@ import java.util.Map;
 
 @Service
 @Slf4j
-@Lazy //为什么这会有一个懒加载 神秘
 public class QuickReplyServiceImpl {
     final
     ObjectMapper mapper;
     final
     EsmHttpClient httpClient;
-    private final Map<String, IMessageQuickReply> messageHandlerMap = new HashMap<>();
+    private final Map<String, IMessageQuickReply> messageHandlerMap;
+    @Autowired
+    SudoService sudoService;
 
-    public QuickReplyServiceImpl(ObjectMapper mapper, ApplicationContext context, EsmHttpClient httpClient) {
-        Map<String, IMessageQuickReply> beansOfType = context.getBeansOfType(IMessageQuickReply.class);
-        System.out.println(beansOfType);
-        beansOfType.forEach((k, v) -> messageHandlerMap.put(v.commandPrefix(), v));
+    public QuickReplyServiceImpl(ObjectMapper mapper, ApplicationContext context, EsmHttpClient httpClient, QuickReplyConfig quickReplyConfig) {
         this.mapper = mapper;
         this.httpClient = httpClient;
+        messageHandlerMap = quickReplyConfig.getMessageHandlerMap();
     }
 
     public ObjectNode handle(JsonNode jsonNode) throws JsonProcessingException {
@@ -46,15 +48,21 @@ public class QuickReplyServiceImpl {
                 log.info("收到私聊{}的讯息:{}", id, rawMessage);
         }
         if (rawMessage == null || rawMessage.charAt(0) != '/') return null;
-        String[] command = rawMessage.split(" ");
-        IMessageQuickReply iMessageQuickReply = messageHandlerMap.get(command[0]);
+        String command = rawMessage.split(" ")[0];
+        IMessageQuickReply iMessageQuickReply = messageHandlerMap.get(command);
+        String reply;
         if (iMessageQuickReply == null) {
-            log.info("未找到{}的相关指令", command[0]);
-            return null;
+            if ("/sudo".equals(command)) {
+                reply = sudoService.onMessage(message);
+            } else {
+                log.info("未找到{}的相关指令", command);
+                return null;
+            }
+        } else {
+            reply = iMessageQuickReply.onMessage(message);
         }
-        String v = iMessageQuickReply.onMessage(message);
-        log.info("回复:{}",v);
-        return mapper.createObjectNode().put("reply", v);
+        log.info("回复:{}", reply);
+        return mapper.createObjectNode().put("reply", reply);
     }
 
 }

@@ -38,6 +38,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 @Service
 @Slf4j
@@ -106,9 +107,10 @@ public class EventServiceImpl implements IMessageQuickReply {
         int totalPages = record.get("total_pages").intValue();
         int eventId = record.get("eventId").intValue();
         CountDownLatch latch = new CountDownLatch(totalPages);
+        ArrayList<Future<HttpResponse>> futures = new ArrayList<>(totalPages);
         for (int i = 1; i <= totalPages; i++) {
             HttpPost httpPost = requestUtils.buildHttpRequest(uri, initContent(i));
-            httpClient.execute(httpPost, new FutureCallback<>() {
+            futures.add(httpClient.execute(httpPost, new FutureCallback<>() {
                 @Override
                 @SneakyThrows
                 public void completed(HttpResponse httpResponse) {
@@ -145,9 +147,9 @@ public class EventServiceImpl implements IMessageQuickReply {
                     latch.countDown();
                     System.out.println("can");
                 }
-            });
+            }));
         }
-        latch.await();
+        checkCancel(latch, futures);
     }
 
 
@@ -158,9 +160,10 @@ public class EventServiceImpl implements IMessageQuickReply {
         int totalPages = record.get("total_pages").intValue();
         int eventId = record.get("eventId").intValue();
         CountDownLatch latch = new CountDownLatch(totalPages);
+        ArrayList<Future<HttpResponse>> futures = new ArrayList<>(totalPages);
         for (int i = 1; i <= totalPages; i++) {
             HttpPost httpPost = requestUtils.buildHttpRequest(uri, initContent(i));
-            httpClient.execute(httpPost, new FutureCallback<>() {
+            futures.add(httpClient.execute(httpPost, new FutureCallback<>() {
                 @Override
                 @SneakyThrows
                 public void completed(HttpResponse httpResponse) {
@@ -195,9 +198,23 @@ public class EventServiceImpl implements IMessageQuickReply {
                     latch.countDown();
                     System.out.println("cancel");
                 }
-            });
+            }));
+        }
+        checkCancel(latch, futures);
+    }
+
+    private void checkCancel(CountDownLatch latch, ArrayList<Future<HttpResponse>> futures) throws InterruptedException {
+        Thread.sleep(50*1000);
+        int cancelCount = 0;
+        for (Future<HttpResponse> future : futures) {
+            if (!future.isDone()) {
+                if (future.cancel(true)) {
+                    cancelCount++;
+                }
+            }
         }
         latch.await();
+        log.warn("被取消的任务数量:{}", cancelCount);
     }
 
     private JsonNode countDownAndGet(HttpResponse httpResponse) throws IOException, BadPaddingException, IllegalBlockSizeException {

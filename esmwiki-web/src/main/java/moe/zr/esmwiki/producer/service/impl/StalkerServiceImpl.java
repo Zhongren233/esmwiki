@@ -91,6 +91,7 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
         throw new NoSuchElementException("[错误]似乎还没有记录");
     }
 
+    @Override
     public PointRanking getRealTimePointRanking(PointRanking pointRankingInDataBase) {
         int startPage = getStartPage(pointRankingInDataBase);
         int currentPage = startPage;
@@ -168,6 +169,7 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
         return "/stk {userArg} {option}";
     }
 
+    @Override
     public String getReturnString(Integer userId) {
         if (eventConfig.getIsUnAvailable()) {
             return "当前不是活动时间";
@@ -203,6 +205,7 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
     }
 
 
+    @Override
     public Integer getUserId(String userArg, String option) {
         Integer userId;
         if ("-id".equals(option)) {
