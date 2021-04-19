@@ -204,13 +204,12 @@ public class EventServiceImpl implements IMessageQuickReply {
     }
 
     private void checkCancel(CountDownLatch latch, ArrayList<Future<HttpResponse>> futures) throws InterruptedException {
-        Thread.sleep(50*1000);
+        Thread.sleep(80 * 1000);
         int cancelCount = 0;
         for (Future<HttpResponse> future : futures) {
             if (!future.isDone()) {
-                if (future.cancel(true)) {
-                    cancelCount++;
-                }
+                future.cancel(true);
+                cancelCount++;
             }
         }
         latch.await();
