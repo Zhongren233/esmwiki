@@ -2,6 +2,8 @@ package moe.zr.esmwiki.producer.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import moe.zr.esmwiki.producer.util.ReplyUtils;
+import moe.zr.qqbot.entry.IMessageQuickReply;
+import moe.zr.qqbot.entry.Message;
 import moe.zr.service.DAQService;
 import moe.zr.service.EventService;
 import org.springframework.scheduling.annotation.Async;
@@ -17,7 +19,7 @@ import java.util.concurrent.ExecutionException;
 
 @Service
 @Slf4j
-public class DAQServiceImpl implements DAQService {
+public class DAQServiceImpl implements DAQService, IMessageQuickReply {
     final
     EventService eventService;
     final
@@ -62,5 +64,23 @@ public class DAQServiceImpl implements DAQService {
             log.error("发生异常", e);
             replyUtils.sendMessage("在爬取榜单时发生了异常，呜呜呜");
         }
+    }
+
+    @Override
+    public String onMessage(String[] str) {
+        return null;
+    }
+
+    @Override
+    public String onMessage(Message message) {
+        if (message.getGroupId()==773891409) {
+            saveAllRanking();
+        }
+        return "喵呜";
+    }
+
+    @Override
+    public String commandPrefix() {
+        return "/daq";
     }
 }
