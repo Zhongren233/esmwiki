@@ -7,14 +7,12 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import java.util.concurrent.Executor;
 @Configuration
 public class AsyncPoolConfig implements AsyncConfigurer {
-//    @Override
-//    public Executor getAsyncExecutor() {
-//        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
-//        threadPoolTaskExecutor.setCorePoolSize(5);
-//        threadPoolTaskExecutor.setMaxPoolSize(5);
-//        threadPoolTaskExecutor.setMaxPoolSize(5);
-//        threadPoolTaskExecutor.initialize();
-//
-//        return threadPoolTaskExecutor;
-//    }
+    @Override
+    public Executor getAsyncExecutor() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(1);
+        threadPoolTaskExecutor.setMaxPoolSize(1);
+        threadPoolTaskExecutor.initialize();
+        return threadPoolTaskExecutor;
+    }
 }
