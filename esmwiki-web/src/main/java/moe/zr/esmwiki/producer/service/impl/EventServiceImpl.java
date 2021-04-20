@@ -43,9 +43,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 @Service
 @Slf4j
@@ -96,7 +94,7 @@ public class EventServiceImpl implements  EventService {
     }
 
     @Async
-    public AsyncResult<Integer> saveAllPointRanking() throws BadPaddingException, InterruptedException, ParseException, IOException, ExecutionException, IllegalBlockSizeException {
+    public AsyncResult<Integer> saveAllPointRanking() throws BadPaddingException, InterruptedException, ParseException, IOException, ExecutionException, IllegalBlockSizeException, TimeoutException {
         String uri = "https://saki-server.happyelements.cn/get/events/point_ranking";
         JsonNode record = pointRankingService.getRankingRecord(1);
         mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
@@ -144,11 +142,16 @@ public class EventServiceImpl implements  EventService {
                 }
             });
         }
-        return new AsyncResult<>(totalPages);
+        if (latch.await(60, TimeUnit.SECONDS)) {
+            return new AsyncResult<>(totalPages);
+        }else{
+            throw new TimeoutException("爬取PointRanking时超时了，呜呜呜");
+
+        }
     }
 
     @Async
-    public AsyncResult<Integer> saveAllScoreRanking() throws BadPaddingException, InterruptedException, ParseException, IOException, ExecutionException, IllegalBlockSizeException {
+    public AsyncResult<Integer> saveAllScoreRanking() throws BadPaddingException, InterruptedException, ParseException, IOException, ExecutionException, IllegalBlockSizeException, TimeoutException {
         String uri = "https://saki-server.happyelements.cn/get/events/score_ranking";
         JsonNode record = songRankingService.getSongRankingRecord(1);
         mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
@@ -195,7 +198,11 @@ public class EventServiceImpl implements  EventService {
                 }
             }));
         }
-        return new AsyncResult<>(totalPages);
+        if (latch.await(60, TimeUnit.SECONDS)) {
+            return new AsyncResult<>(totalPages);
+        }else {
+            throw new TimeoutException("爬取ScoreRanking时超时了，呜呜呜");
+        }
     }
 
 

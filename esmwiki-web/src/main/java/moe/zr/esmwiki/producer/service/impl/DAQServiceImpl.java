@@ -16,6 +16,7 @@ import javax.crypto.IllegalBlockSizeException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 @Service
 @Slf4j
@@ -63,6 +64,9 @@ public class DAQServiceImpl implements DAQService, IMessageQuickReply {
         } catch (BadPaddingException | InterruptedException | ParseException | IOException | ExecutionException | IllegalBlockSizeException e) {
             log.error("发生异常", e);
             replyUtils.sendMessage("在爬取榜单时发生了异常，呜呜呜");
+        } catch (TimeoutException e) {
+            log.warn(e.getMessage());
+            replyUtils.sendMessage(e.getMessage());
         }
     }
 
