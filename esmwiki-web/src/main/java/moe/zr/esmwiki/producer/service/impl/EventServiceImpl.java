@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import io.lettuce.core.internal.Futures;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import moe.zr.enums.EventRankingNavigationType;
@@ -17,6 +18,7 @@ import moe.zr.pojo.PointRanking;
 import moe.zr.pojo.ScoreRanking;
 import moe.zr.qqbot.entry.IMessageQuickReply;
 import moe.zr.qqbot.entry.Message;
+import moe.zr.service.EventService;
 import moe.zr.service.PointRankingService;
 import moe.zr.service.SongRankingService;
 import org.apache.http.HttpResponse;
@@ -25,8 +27,13 @@ import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.msgpack.MessagePack;
 import org.msgpack.type.Value;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
+import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -42,7 +49,8 @@ import java.util.concurrent.Future;
 
 @Service
 @Slf4j
-public class EventServiceImpl implements IMessageQuickReply {
+@EnableAsync
+public class EventServiceImpl implements  EventService {
     final
     RequestUtils requestUtils;
     final
@@ -75,19 +83,6 @@ public class EventServiceImpl implements IMessageQuickReply {
     final
     ReplyUtils replyUtils;
 
-    public String saveAllRanking() {
-        new Thread(() -> {
-            try {
-                saveAllPointRanking();
-                saveAllScoreRanking();
-                replyUtils.sendMessage("成功更新数据库");
-            } catch (BadPaddingException | InterruptedException | ParseException | IOException | ExecutionException | IllegalBlockSizeException e) {
-                log.error("发生异常", e);
-            }
-        }).start();
-        return "成功部署任务，可能需要好一会儿";
-    }
-
 
     final
     ObjectMapper mapper;
@@ -100,17 +95,17 @@ public class EventServiceImpl implements IMessageQuickReply {
         return requestUtils.basicRequest() + "&event_ranking_navigation_type_id=" + type.getRank();
     }
 
-    private void saveAllPointRanking() throws BadPaddingException, InterruptedException, ParseException, IOException, ExecutionException, IllegalBlockSizeException {
+    @Async
+    public AsyncResult<Integer> saveAllPointRanking() throws BadPaddingException, InterruptedException, ParseException, IOException, ExecutionException, IllegalBlockSizeException {
         String uri = "https://saki-server.happyelements.cn/get/events/point_ranking";
         JsonNode record = pointRankingService.getRankingRecord(1);
         mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         int totalPages = record.get("total_pages").intValue();
         int eventId = record.get("eventId").intValue();
         CountDownLatch latch = new CountDownLatch(totalPages);
-        ArrayList<Future<HttpResponse>> futures = new ArrayList<>(totalPages);
         for (int i = 1; i <= totalPages; i++) {
             HttpPost httpPost = requestUtils.buildHttpRequest(uri, initContent(i));
-            futures.add(httpClient.execute(httpPost, new FutureCallback<>() {
+            httpClient.execute(httpPost, new FutureCallback<>() {
                 @Override
                 @SneakyThrows
                 public void completed(HttpResponse httpResponse) {
@@ -147,15 +142,15 @@ public class EventServiceImpl implements IMessageQuickReply {
                     latch.countDown();
                     System.out.println("can");
                 }
-            }));
+            });
         }
-        checkCancel(latch, futures);
+        return new AsyncResult<>(totalPages);
     }
 
-
-    private void saveAllScoreRanking() throws BadPaddingException, InterruptedException, ParseException, IOException, ExecutionException, IllegalBlockSizeException {
+    @Async
+    public AsyncResult<Integer> saveAllScoreRanking() throws BadPaddingException, InterruptedException, ParseException, IOException, ExecutionException, IllegalBlockSizeException {
         String uri = "https://saki-server.happyelements.cn/get/events/score_ranking";
-        JsonNode record = pointRankingService.getRankingRecord(1);
+        JsonNode record = songRankingService.getSongRankingRecord(1);
         mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         int totalPages = record.get("total_pages").intValue();
         int eventId = record.get("eventId").intValue();
@@ -200,21 +195,9 @@ public class EventServiceImpl implements IMessageQuickReply {
                 }
             }));
         }
-        checkCancel(latch, futures);
+        return new AsyncResult<>(totalPages);
     }
 
-    private void checkCancel(CountDownLatch latch, ArrayList<Future<HttpResponse>> futures) throws InterruptedException {
-        Thread.sleep(80 * 1000);
-        int cancelCount = 0;
-        for (Future<HttpResponse> future : futures) {
-            if (!future.isDone()) {
-                future.cancel(true);
-                cancelCount++;
-            }
-        }
-        latch.await();
-        log.warn("被取消的任务数量:{}", cancelCount);
-    }
 
     private JsonNode countDownAndGet(HttpResponse httpResponse) throws IOException, BadPaddingException, IllegalBlockSizeException {
         byte[] bytes = new byte[50 * 1000];
@@ -226,28 +209,4 @@ public class EventServiceImpl implements IMessageQuickReply {
         return mapper.readTree(read1.toString());
     }
 
-    @Override
-    public String onMessage(String[] str) {
-        if (str.length == 2) {
-            return saveAllRanking();
-        }
-        return "?";
-    }
-
-    @Override
-    public String onMessage(Message message) {
-        if (message.getGroupId() != 773891409) {
-            return null;
-        }
-        if (message.getUserId() == 732713726) {
-            String[] s = message.getRawMessage().split(" ");
-            return onMessage(s);
-        }
-        return "没有权限";
-    }
-
-    @Override
-    public String commandPrefix() {
-        return "/event";
-    }
 }

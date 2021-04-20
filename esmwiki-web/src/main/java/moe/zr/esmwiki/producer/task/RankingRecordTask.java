@@ -9,9 +9,13 @@ import moe.zr.esmwiki.producer.repository.ScoreRankingRecordRepository;
 import moe.zr.esmwiki.producer.service.impl.EventServiceImpl;
 import moe.zr.esmwiki.producer.util.ReplyUtils;
 import moe.zr.pojo.*;
+import moe.zr.service.DAQService;
+import moe.zr.service.EventService;
 import moe.zr.service.PointRankingService;
 import moe.zr.service.SongRankingService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -46,8 +50,10 @@ public class RankingRecordTask {
     final
     MongoTemplate template;
     final
-    EventServiceImpl eventService;
+    EventService eventService;
     private final EventConfig eventConfig;
+    final
+    DAQService daqService;
 
     public RankingRecordTask(PointRankingService pointRankingService,
                              PointRankingRecordRepository pointRankingRecordRepository,
@@ -56,8 +62,8 @@ public class RankingRecordTask {
                              ReplyUtils replyUtils,
                              SimpleDateFormat simpleDateFormat,
                              MongoTemplate template,
-                             EventServiceImpl eventService,
-                             EventConfig eventConfig) {
+                             EventService eventService,
+                             EventConfig eventConfig, DAQService daqService) {
         this.pointRankingService = pointRankingService;
         this.pointRankingRecordRepository = pointRankingRecordRepository;
         this.scoreRankingRecordRepository = scoreRankingRecordRepository;
@@ -67,6 +73,7 @@ public class RankingRecordTask {
         this.template = template;
         this.eventService = eventService;
         this.eventConfig = eventConfig;
+        this.daqService = daqService;
     }
 
     @Scheduled(cron = cron)
@@ -83,7 +90,7 @@ public class RankingRecordTask {
             template.dropCollection(PointRanking.class);
             template.dropCollection(ScoreRanking.class);
             log.warn("成功删除集合");
-            eventService.saveAllRanking();
+            daqService.saveAllRanking();
         }
     }
 

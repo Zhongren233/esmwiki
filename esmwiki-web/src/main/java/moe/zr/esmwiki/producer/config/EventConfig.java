@@ -57,7 +57,7 @@ public class EventConfig implements IMessageQuickReply {
         String eventConfig = redisTemplate.opsForValue().get("Event:Config");
         String s = "没有配置信息，请设置配置";
         if (eventConfig != null) {
-            s = "成功从redis中获得配置:{}";
+            s = "成功从redis中获得配置:"+ eventConfig;
             JsonNode jsonNode = mapper.readTree(eventConfig);
             log.info(s, jsonNode);
             String type = jsonNode.get("event_type").asText();

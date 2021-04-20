@@ -8,14 +8,18 @@ import moe.zr.esmwiki.producer.client.EsmHttpClient;
 import moe.zr.qqbot.entry.SendMessage;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
+import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutionException;
-
+@Configurable
 @Component
 @Slf4j
 public class ReplyUtils {
+    @Value("${reply.address}")
+    private String uri;
     final
     ObjectMapper mapper;
     final
@@ -35,7 +39,7 @@ public class ReplyUtils {
     }
 
     private void sendMessage(SendMessage sendMessage) {
-        HttpPost post = new HttpPost("http://localhost:5700/send_msg");
+        HttpPost post = new HttpPost(uri);
         mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         StringEntity entity;
         try {

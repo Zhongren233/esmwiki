@@ -14,8 +14,6 @@ class EsmwikiProducerApplicationTests {
     QuickReplyConfig quickReplyConfig;
     @Test
     void context() {
-        System.out.println(eventConfig);
-        System.out.println(quickReplyConfig.getMessageHandlerMap());
     }
 
 }
