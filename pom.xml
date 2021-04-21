@@ -6,7 +6,7 @@
 
     <groupId>moe.zr</groupId>
     <artifactId>esmwiki-parent</artifactId>
-    <version>Aira-1.1.2-fix2</version>
+    <version>Aira-1.1.2-fix3-dev</version>
     <modules>
         <module>esmwiki-common</module>
         <module>esmwiki-web</module>
