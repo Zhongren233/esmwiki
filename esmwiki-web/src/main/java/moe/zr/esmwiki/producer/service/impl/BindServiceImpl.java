@@ -27,8 +27,8 @@ public class BindServiceImpl implements IMessageQuickReply {
     final
     EventConfig config;
 
-    public BindServiceImpl(StalkerServiceImpl stalkerService, StringRedisTemplate redisTemplate, BindUserProfileRepository repository, EventConfig config) {
-        random = new Random();
+    public BindServiceImpl(StalkerServiceImpl stalkerService, StringRedisTemplate redisTemplate, BindUserProfileRepository repository, EventConfig config, Random random) {
+        this.random = random;
         this.stalkerService = stalkerService;
         this.redisTemplate = redisTemplate;
         this.repository = repository;
