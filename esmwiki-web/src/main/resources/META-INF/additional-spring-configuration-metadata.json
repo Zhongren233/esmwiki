@@ -1,0 +1,28 @@
+{
+  "properties": [
+    {
+      "name": "daq.session",
+      "type": "java.lang.String",
+      "description": "Description for daq.session."
+    },
+    {
+      "name": "daq.token",
+      "type": "java.lang.String",
+      "description": "Description for daq.token."
+    },
+    {
+      "name": "reply.address",
+      "type": "java.lang.String",
+      "description": "Description for reply.address."
+    },
+    {
+      "name": "es.resMd5",
+      "type": "java.lang.String",
+      "description": "Description for es.resMd5."
+    },
+    {
+      "name": "es.major",
+      "type": "java.lang.String",
+      "description": "Description for es.major."
+    }
+  ] }

@@ -48,7 +48,7 @@ import java.util.concurrent.*;
 @Service
 @Slf4j
 @EnableAsync
-public class EventServiceImpl implements  EventService {
+public class EventServiceImpl implements EventService {
     final
     RequestUtils requestUtils;
     final
@@ -66,8 +66,8 @@ public class EventServiceImpl implements  EventService {
     StringRedisTemplate stringRedisTemplate;
 
 
-    public EventServiceImpl(CloseableHttpAsyncClient httpClient, PointRankingRepository pointRankingRepository, ScoreRankingRepository scoreRankingRepository, PointRankingService pointRankingService, SongRankingService songRankingService, ObjectMapper mapper, RequestUtils requestUtils, StringRedisTemplate stringRedisTemplate, ReplyUtils replyUtils) {
-        this.httpClient = httpClient;
+    public EventServiceImpl(CloseableHttpAsyncClient eventClient, PointRankingRepository pointRankingRepository, ScoreRankingRepository scoreRankingRepository, PointRankingService pointRankingService, SongRankingService songRankingService, ObjectMapper mapper, RequestUtils requestUtils, StringRedisTemplate stringRedisTemplate, ReplyUtils replyUtils) {
+        this.httpClient = eventClient;
         this.pointRankingRepository = pointRankingRepository;
         this.scoreRankingRepository = scoreRankingRepository;
         this.pointRankingService = pointRankingService;
@@ -80,8 +80,6 @@ public class EventServiceImpl implements  EventService {
 
     final
     ReplyUtils replyUtils;
-
-
     final
     ObjectMapper mapper;
 
@@ -144,7 +142,7 @@ public class EventServiceImpl implements  EventService {
         }
         if (latch.await(60, TimeUnit.SECONDS)) {
             return new AsyncResult<>(totalPages);
-        }else{
+        } else {
             throw new TimeoutException("爬取PointRanking时超时了，呜呜呜");
 
         }
@@ -158,10 +156,9 @@ public class EventServiceImpl implements  EventService {
         int totalPages = record.get("total_pages").intValue();
         int eventId = record.get("eventId").intValue();
         CountDownLatch latch = new CountDownLatch(totalPages);
-        ArrayList<Future<HttpResponse>> futures = new ArrayList<>(totalPages);
         for (int i = 1; i <= totalPages; i++) {
             HttpPost httpPost = requestUtils.buildHttpRequest(uri, initContent(i));
-            futures.add(httpClient.execute(httpPost, new FutureCallback<>() {
+            httpClient.execute(httpPost, new FutureCallback<>() {
                 @Override
                 @SneakyThrows
                 public void completed(HttpResponse httpResponse) {
@@ -196,11 +193,11 @@ public class EventServiceImpl implements  EventService {
                     latch.countDown();
                     System.out.println("cancel");
                 }
-            }));
+            });
         }
         if (latch.await(60, TimeUnit.SECONDS)) {
             return new AsyncResult<>(totalPages);
-        }else {
+        } else {
             throw new TimeoutException("爬取ScoreRanking时超时了，呜呜呜");
         }
     }
