@@ -48,7 +48,7 @@ import java.util.concurrent.*;
 @Service
 @Slf4j
 @EnableAsync
-public class EventServiceImpl implements  EventService {
+public class EventServiceImpl implements EventService {
     final
     RequestUtils requestUtils;
     final
@@ -80,8 +80,6 @@ public class EventServiceImpl implements  EventService {
 
     final
     ReplyUtils replyUtils;
-
-
     final
     ObjectMapper mapper;
 
@@ -144,7 +142,7 @@ public class EventServiceImpl implements  EventService {
         }
         if (latch.await(60, TimeUnit.SECONDS)) {
             return new AsyncResult<>(totalPages);
-        }else{
+        } else {
             throw new TimeoutException("爬取PointRanking时超时了，呜呜呜");
 
         }
@@ -199,7 +197,7 @@ public class EventServiceImpl implements  EventService {
         }
         if (latch.await(60, TimeUnit.SECONDS)) {
             return new AsyncResult<>(totalPages);
-        }else {
+        } else {
             throw new TimeoutException("爬取ScoreRanking时超时了，呜呜呜");
         }
     }
