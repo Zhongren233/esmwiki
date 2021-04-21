@@ -39,8 +39,8 @@ public class DAQServiceImpl implements DAQService, IMessageQuickReply {
             pointRankingResult.addCallback(new ListenableFutureCallback<>() {
                 @Override
                 public void onFailure(Throwable ex) {
-                    replyUtils.sendMessage("失败了失败了失败了失败了失败了");
-                    log.error("在爬取scoreRanking时失败", ex);
+                    replyUtils.sendMessage(ex.getMessage());
+                    log.error("在爬取pointRanking时异常", ex);
                 }
 
                 @Override
@@ -51,8 +51,8 @@ public class DAQServiceImpl implements DAQService, IMessageQuickReply {
             scoreRankingResult.addCallback(new ListenableFutureCallback<>() {
                 @Override
                 public void onFailure(Throwable ex) {
-                    replyUtils.sendMessage("失败了失败了失败了失败了失败了");
-                    log.error("在爬取scoreRanking时失败", ex);
+                    replyUtils.sendMessage(ex.getMessage());
+                    log.error("在爬取scoreRanking时异常", ex);
                 }
 
                 @Override

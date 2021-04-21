@@ -28,8 +28,8 @@ public class EsmHttpClient {
     final
     ObjectMapper mapper;
 
-    public EsmHttpClient(CloseableHttpAsyncClient client, ObjectMapper mapper) {
-        this.httpClient = client;
+    public EsmHttpClient(CloseableHttpAsyncClient normalClient, ObjectMapper mapper) {
+        this.httpClient = normalClient;
         this.mapper = mapper;
     }
 
