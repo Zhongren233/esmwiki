@@ -70,6 +70,9 @@ public class QuickReplyServiceImpl {
         } else {
             reply = iMessageQuickReply.onMessage(message);
         }
+        if (reply == null) {
+            return null;
+        }
         log.info("回复:{}", reply);
         return mapper.createObjectNode().put("reply", reply);
     }
