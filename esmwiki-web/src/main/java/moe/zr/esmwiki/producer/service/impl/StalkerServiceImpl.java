@@ -191,7 +191,7 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
             }
             stringBuilder
                     .append("昵称:").append(userProfile.getName()).append("\n")
-                    .append("id:").append(pointRanking.getUserId()).append("\n")
+//                    .append("id:").append(pointRanking.getUserId()).append("\n")
                     .append("活动点数排名:").append(pointRanking.getRank()).append("\n")
                     .append("活动点数:").append(pointRanking.getPoint()).append("\n");
             optionalScoreRanking.ifPresent(scoreRanking -> {
