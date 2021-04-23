@@ -37,9 +37,10 @@ public class QuickReplyServiceImpl {
 
     public ObjectNode handle(JsonNode jsonNode) throws JsonProcessingException {
         Message message = mapper.treeToValue(jsonNode, Message.class);
-        log.info(message.toString());
+        log.info("收到讯息:{}",message.toString());
         String rawMessage = message.getRawMessage();
         Long id = message.getUserId();
+        /*
         String type = message.getMessageType();
         switch (type) {
             case "group":
@@ -48,7 +49,7 @@ public class QuickReplyServiceImpl {
             case "private":
                 log.info("收到私聊{}的讯息:{}", id, rawMessage);
         }
-
+*/
         if (rawMessage == null ) {
             return null;
         }
