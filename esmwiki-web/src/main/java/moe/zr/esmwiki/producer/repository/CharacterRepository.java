@@ -1,7 +1,6 @@
 package moe.zr.esmwiki.producer.repository;
 
 import moe.zr.entry.Character;
-import moe.zr.pojo.BindUserProfile;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -12,7 +11,7 @@ import java.util.List;
 
 @Repository
 public interface CharacterRepository extends MongoRepository<Character, String> {
-    List<Character> findByBirthMonth(String birthMonth);
+    List<Character> findByBirthMonthOrderByBirthday(String birthMonth);
 
     List<Character> findByBirthday(String birthDay);
 
@@ -32,10 +31,10 @@ public interface CharacterRepository extends MongoRepository<Character, String> 
         } else {
             queryNextMonth = nextMonth.getValue() + "月";
         }
-        return findByBirthMonth(queryMonth, queryNextMonth);
+        return findByBirthMonthOrderByBirthday(queryMonth, queryNextMonth);
 
     }
 
     @Query(value = "{$or:[{birthMonth:?0},{birthMonth:?1}]}",sort = "{birthday:1}")
-    List<Character> findByBirthMonth(String month, String nextMonth);
+    List<Character> findByBirthMonthOrderByBirthday(String month, String nextMonth);
 }
