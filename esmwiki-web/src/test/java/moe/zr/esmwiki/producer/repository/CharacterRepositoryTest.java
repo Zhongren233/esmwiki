@@ -42,4 +42,9 @@ class CharacterRepositoryTest {
         List<Character> byBirthday = characterRepository.findByBirthday(query);
         byBirthday.forEach(System.out::println);
     }
+
+    @Test
+    void findThisAndNextMonthBirthCharacter() {
+        characterRepository.findThisAndNextMonthBirthCharacter().forEach(System.out::println);
+    }
 }
