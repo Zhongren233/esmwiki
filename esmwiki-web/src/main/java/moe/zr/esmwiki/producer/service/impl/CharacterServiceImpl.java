@@ -90,7 +90,7 @@ public class CharacterServiceImpl implements CharacterService, IMessageQuickRepl
         }
 
         if (birthMonth.startsWith("11")||birthMonth.startsWith("12")||birthMonth.startsWith("0")) {
-            List<Character> byBirthMonth = characterRepository.findByBirthMonth(birthMonth);
+            List<Character> byBirthMonth = characterRepository.findByBirthMonthOrderByBirthday(birthMonth);
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append("在 ").append(birthMonth).append(" 过生日的小偶像有:\n");
             for (Character character : byBirthMonth) {

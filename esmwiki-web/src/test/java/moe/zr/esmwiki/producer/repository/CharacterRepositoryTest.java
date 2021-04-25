@@ -3,17 +3,12 @@ package moe.zr.esmwiki.producer.repository;
 import moe.zr.entry.Character;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.web.format.DateTimeFormatters;
-import org.springframework.boot.test.autoconfigure.core.AutoConfigureCache;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
-import java.time.MonthDay;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 class CharacterRepositoryTest {
     @Autowired
@@ -28,7 +23,7 @@ class CharacterRepositoryTest {
         }else {
             query = monthValue + "月";
         }
-        List<Character> byBirthMonth = characterRepository.findByBirthMonth(query);
+        List<Character> byBirthMonth = characterRepository.findByBirthMonthOrderByBirthday(query);
         for (Character character : byBirthMonth) {
             System.out.println(character);
         }
@@ -46,5 +41,11 @@ class CharacterRepositoryTest {
     @Test
     void findThisAndNextMonthBirthCharacter() {
         characterRepository.findThisAndNextMonthBirthCharacter().forEach(System.out::println);
+    }
+
+    @Test
+    void findByBirthMon() {
+        characterRepository.findByBirthMonthOrderByBirthday("05月").forEach(System.out::println);
+
     }
 }
