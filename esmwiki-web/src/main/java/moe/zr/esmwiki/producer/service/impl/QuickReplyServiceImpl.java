@@ -74,7 +74,7 @@ public class QuickReplyServiceImpl {
             return null;
         }
         log.info("回复:{}", reply);
-        return mapper.createObjectNode().put("reply", reply);
+        return mapper.createObjectNode().put("reply", reply).put("at_sender", true);
     }
 
 }
