@@ -5,7 +5,7 @@
     <parent>
         <artifactId>esmwiki-parent</artifactId>
         <groupId>moe.zr</groupId>
-        <version>Aira-1.1.3-dev</version>
+        <version>Aira-1.1.3-stable</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
