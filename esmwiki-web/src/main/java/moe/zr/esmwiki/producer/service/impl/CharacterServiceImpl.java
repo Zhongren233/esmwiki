@@ -66,10 +66,10 @@ public class CharacterServiceImpl implements CharacterService, IMessageQuickRepl
             MonthDay from = MonthDay.from(parse);
             LocalDate localDate = from.atYear(now.getYear());
             long l = localDate.toEpochDay() - now.toEpochDay();
-            if (l==0) {
+            if (l == 0) {
                 stringBuilder.append("今天是 ").append(character.getName()).append(" 的生日！");
             }
-            if (l>0) {
+            if (l > 0) {
                 stringBuilder.append("距离 ").append(character.getName()).append(" 的生日还有 ").append(l).append(" 天");
             }
             stringBuilder.append("\n");
@@ -79,17 +79,17 @@ public class CharacterServiceImpl implements CharacterService, IMessageQuickRepl
 
     @Override
     public String queryBirthDay(String birthMonth) {
-        if (birthMonth.length()==2) {
+        if (birthMonth.length() == 2) {
             birthMonth = "0" + birthMonth;
         }
-        if (birthMonth.length()!=3) {
+        if (birthMonth.length() != 3) {
             return "不正确的格式，示例：/birthday 01月";
         }
         if (!birthMonth.endsWith("月")) {
             return "不正确的格式，示例：/birthday 01月";
         }
 
-        if (birthMonth.startsWith("11")||birthMonth.startsWith("12")||birthMonth.startsWith("0")) {
+        if (birthMonth.startsWith("10") || birthMonth.startsWith("11") || birthMonth.startsWith("12") || birthMonth.startsWith("0")) {
             List<Character> byBirthMonth = characterRepository.findByBirthMonthOrderByBirthday(birthMonth);
             StringBuilder stringBuilder = new StringBuilder();
             stringBuilder.append("在 ").append(birthMonth).append(" 过生日的小偶像有:\n");
