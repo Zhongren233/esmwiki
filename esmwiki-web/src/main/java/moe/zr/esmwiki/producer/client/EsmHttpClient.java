@@ -1,5 +1,6 @@
 package moe.zr.esmwiki.producer.client;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -73,7 +75,7 @@ public class EsmHttpClient {
                 int read = bufferedInputStream.read(bytes);
                 bytes = Arrays.copyOf(bytes, read);
                 Value read1 = new MessagePack().read(CryptoUtils.decrypt(bytes));
-                log.error("状态码不为200,可用的信息:{}",read1.toString());
+                log.error("状态码不为200,可用的信息:{}", read1.toString());
             } catch (IOException | IllegalBlockSizeException | BadPaddingException e) {
                 e.printStackTrace();
             }
@@ -81,5 +83,10 @@ public class EsmHttpClient {
         }
     }
 
+    public JsonNode executeAsJsonNode(HttpPost httpPost) throws ExecutionException, InterruptedException, IOException {
+        HttpResponse httpResponse = httpClient.execute(httpPost, null).get();
+        InputStream content = httpResponse.getEntity().getContent();
+        return mapper.readTree(content);
+    }
 
 }

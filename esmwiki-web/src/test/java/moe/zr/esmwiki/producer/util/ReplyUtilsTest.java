@@ -11,4 +11,9 @@ class ReplyUtilsTest {
     void sendMessage() {
         replyUtils.sendMessage("测试 | test message");
     }
+
+    @Test
+    void groupMessage() {
+        replyUtils.sendGroupPostingMessage("测试群发");
+    }
 }

@@ -2,16 +2,15 @@ package moe.zr.esmwiki.producer.service.impl;
 
 import moe.zr.entry.Character;
 import moe.zr.esmwiki.producer.repository.CharacterRepository;
+import moe.zr.esmwiki.producer.util.ReplyUtils;
 import moe.zr.qqbot.entry.IMessageQuickReply;
 import moe.zr.service.CharacterService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.MonthDay;
-import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.List;
@@ -22,13 +21,36 @@ public class CharacterServiceImpl implements CharacterService, IMessageQuickRepl
     final
     CharacterRepository characterRepository;
 
-    public CharacterServiceImpl(CharacterRepository characterRepository) {
+    public CharacterServiceImpl(CharacterRepository characterRepository, ReplyUtils replyUtils) {
         this.characterRepository = characterRepository;
+        this.replyUtils = replyUtils;
     }
 
+    final
+    ReplyUtils replyUtils;
+
     @Override
-//    @Scheduled(cron = "")
+    @Scheduled(cron = "0 0 19 * * ? ")
     public void checkBirthDay() {
+        String query = DateTimeFormatter.ofPattern("MM月dd日").format(MonthDay.now());
+        List<Character> byBirthday = characterRepository.findByBirthday(query);
+        if (!byBirthday.isEmpty()) {
+            StringBuilder stringBuilder = new StringBuilder("明天是 ");
+            switch (byBirthday.size()) {
+                case 1:
+                    stringBuilder.append(byBirthday.get(0).getName());
+                    stringBuilder.append(" 的生日");
+                    break;
+                case 2:
+                    stringBuilder.append(byBirthday.get(0).getName());
+                    stringBuilder.append(" 和 ");
+                    stringBuilder.append(byBirthday.get(1).getName());
+                    stringBuilder.append("的生日");
+                    break;
+            }
+            replyUtils.sendGroupPostingMessage(stringBuilder.toString());
+        }
+
 
     }
 
@@ -57,7 +79,29 @@ public class CharacterServiceImpl implements CharacterService, IMessageQuickRepl
 
     @Override
     public String queryBirthDay(String birthMonth) {
-        return null;
+        if (birthMonth.length()==2) {
+            birthMonth = "0" + birthMonth;
+        }
+        if (birthMonth.length()!=3) {
+            return "不正确的格式，示例：/birthday 01月";
+        }
+        if (!birthMonth.endsWith("月")) {
+            return "不正确的格式，示例：/birthday 01月";
+        }
+
+        if (birthMonth.startsWith("11")||birthMonth.startsWith("12")||birthMonth.startsWith("0")) {
+            List<Character> byBirthMonth = characterRepository.findByBirthMonth(birthMonth);
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append("在 ").append(birthMonth).append(" 过生日的小偶像有:\n");
+            for (Character character : byBirthMonth) {
+                stringBuilder.append(character.getName());
+                stringBuilder.append("\t");
+                stringBuilder.append(character.getBirthday());
+                stringBuilder.append("\n");
+            }
+            return stringBuilder.toString();
+        }
+        return "众所周知，一年有12月";
     }
 
     @Override

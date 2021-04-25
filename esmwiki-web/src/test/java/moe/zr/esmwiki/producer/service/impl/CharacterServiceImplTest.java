@@ -28,4 +28,11 @@ class CharacterServiceImplTest {
     void query() {
         System.out.println(characterService.queryBirthDay());
     }
+
+    @Test
+    void queryA() {
+        System.out.println(characterService.queryBirthDay("011月"));
+        System.out.println(characterService.queryBirthDay("1月"));
+        System.out.println(characterService.queryBirthDay("13月"));
+    }
 }

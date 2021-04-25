@@ -6,6 +6,6 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 public class SendMessage {
-    Integer groupId = 773891409;
+    Long groupId = 773891409L;
     String message;
 }
