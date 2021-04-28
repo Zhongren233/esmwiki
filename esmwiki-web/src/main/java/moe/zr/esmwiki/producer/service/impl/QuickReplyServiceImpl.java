@@ -47,8 +47,6 @@ public class QuickReplyServiceImpl {
         String reply = null;
         if (iMessageQuickReply != null) {
             reply = iMessageQuickReply.onMessage(message);
-        } else {
-            log.debug("未找到{}的相关指令", command);
         }
         if ("/sudo".equals(command)) {
             reply = sudoService.onMessage(message);
