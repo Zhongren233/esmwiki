@@ -37,44 +37,28 @@ public class QuickReplyServiceImpl {
 
     public ObjectNode handle(JsonNode jsonNode) throws JsonProcessingException {
         Message message = mapper.treeToValue(jsonNode, Message.class);
-        log.info("收到讯息:{}",message.toString());
+        log.info("收到讯息:{}", message.toString());
         String rawMessage = message.getRawMessage();
-        Long id = message.getUserId();
-        /*
-        String type = message.getMessageType();
-        switch (type) {
-            case "group":
-                log.info("收到群{} 用户{}的讯息:{}", message.getGroupId(), id, rawMessage);
-                break;
-            case "private":
-                log.info("收到私聊{}的讯息:{}", id, rawMessage);
-        }
-*/
-        if (rawMessage == null ) {
+        if (rawMessage == null) {
             return null;
         }
-        if (rawMessage.charAt(0) != '/'&&!rawMessage.equals("今日运势")) {
-            return null;
-        }
-
         String command = rawMessage.split(" ")[0];
         IMessageQuickReply iMessageQuickReply = messageHandlerMap.get(command);
-        String reply;
-        if (iMessageQuickReply == null) {
-            if ("/sudo".equals(command)) {
-                reply = sudoService.onMessage(message);
-            } else {
-                log.info("未找到{}的相关指令", command);
-                return null;
-            }
-        } else {
+        String reply = null;
+        if (iMessageQuickReply != null) {
             reply = iMessageQuickReply.onMessage(message);
+        } else {
+            log.info("未找到{}的相关指令", command);
         }
-        if (reply == null) {
+        if ("/sudo".equals(command)) {
+            reply = sudoService.onMessage(message);
+        }
+        if (reply != null) {
+            log.info("回复:{}", reply);
+            return mapper.createObjectNode().put("reply", reply).put("at_sender", true);
+        } else {
             return null;
         }
-        log.info("回复:{}", reply);
-        return mapper.createObjectNode().put("reply", reply).put("at_sender", true);
     }
 
 }
