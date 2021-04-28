@@ -184,9 +184,15 @@ public class PointRankingServiceImpl implements PointRankingService {
                                 break;
                         }
                         if (eventPointReward == null) {
-                            throw new IllegalArgumentException();
+                            int point = Integer.parseInt(str[2]);
+                            if (point<=10000) {
+                                return "point太小了，不查";
+                            }
+                            Integer pointRewardCount = getPointRewardCount(point);
+                            return point + "pt人数为:" + pointRewardCount;
+                        } else {
+                            return eventPointReward.getGear() + "人数为:" + getPointRewardCount(eventPointReward.getPoint());
                         }
-                        return eventPointReward.getGear() + "人数为:" + getPointRewardCount(eventPointReward.getPoint());
                     case "batch":
                         if (str.length == 3 && "tour".equals(str[2])) {
                             return batchGetTourEventPointRewardCount();
