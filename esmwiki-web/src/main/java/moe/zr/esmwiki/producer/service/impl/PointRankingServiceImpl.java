@@ -11,12 +11,14 @@ import moe.zr.enums.NormalEventPointReward;
 import moe.zr.enums.TourEventPointReward;
 import moe.zr.esmwiki.producer.client.EsmHttpClient;
 import moe.zr.esmwiki.producer.config.EventConfig;
+import moe.zr.esmwiki.producer.repository.PointRankingRepository;
 import moe.zr.esmwiki.producer.util.RequestUtils;
 import moe.zr.pojo.PointRanking;
 import moe.zr.pojo.RankingRecord;
 import moe.zr.service.PointRankingService;
 import org.apache.http.client.methods.HttpPost;
 import org.msgpack.type.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
@@ -44,13 +46,16 @@ public class PointRankingServiceImpl implements PointRankingService {
     final
     StringRedisTemplate redisTemplate;
     private final EventConfig config;
+    final
+    PointRankingRepository pointRankingRepository;
 
-    public PointRankingServiceImpl(RequestUtils utils, EsmHttpClient httpClient, ObjectMapper mapper, StringRedisTemplate redisTemplate, EventConfig eventConfig) {
+    public PointRankingServiceImpl(RequestUtils utils, EsmHttpClient httpClient, ObjectMapper mapper, StringRedisTemplate redisTemplate, EventConfig eventConfig, PointRankingRepository pointRankingRepository) {
         this.utils = utils;
         this.httpClient = httpClient;
         this.mapper = mapper;
         this.redisTemplate = redisTemplate;
         this.config = eventConfig;
+        this.pointRankingRepository = pointRankingRepository;
     }
 
     public List<PointRanking> getPointRankings(Integer integer) throws IllegalBlockSizeException, ExecutionException, BadPaddingException, IOException {
@@ -115,7 +120,8 @@ public class PointRankingServiceImpl implements PointRankingService {
         String s = redisTemplate.opsForValue().get(key + point);
         Integer count;
         if (s == null) {
-            count = getPointRewardCount(point, 1);
+            Integer countInDB = pointRankingRepository.countByPointGreaterThanEqual(point);
+            count = getPointRewardCount(point, countInDB/20+1);
         } else {
             Integer startPage = Integer.valueOf(s);
             count = getPointRewardCount(point, startPage);
@@ -124,8 +130,8 @@ public class PointRankingServiceImpl implements PointRankingService {
         redisTemplate.opsForValue().set(
                 key + point,
                 String.valueOf(page),
-                60 * 48,
-                TimeUnit.MINUTES);
+                12,
+                TimeUnit.HOURS);
         return count;
     }
 
@@ -184,9 +190,15 @@ public class PointRankingServiceImpl implements PointRankingService {
                                 break;
                         }
                         if (eventPointReward == null) {
-                            throw new IllegalArgumentException();
+                            int point = Integer.parseInt(str[2]);
+                            if (point <= 10000) {
+                                return "point太小了，不查";
+                            }
+                            Integer pointRewardCount = getPointRewardCount(point);
+                            return point + "pt人数为:" + pointRewardCount;
+                        } else {
+                            return eventPointReward.getGear() + "人数为:" + getPointRewardCount(eventPointReward.getPoint());
                         }
-                        return eventPointReward.getGear() + "人数为:" + getPointRewardCount(eventPointReward.getPoint());
                     case "batch":
                         if (str.length == 3 && "tour".equals(str[2])) {
                             return batchGetTourEventPointRewardCount();

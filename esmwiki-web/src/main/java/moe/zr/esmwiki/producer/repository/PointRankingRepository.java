@@ -11,4 +11,6 @@ import java.util.List;
 @Repository
 public interface PointRankingRepository extends MongoRepository<PointRanking, String> {
     List<PointRanking> findAllByUserProfile(UserProfile userProfile);
+
+    Integer countByPointGreaterThanEqual(Integer point);
 }
