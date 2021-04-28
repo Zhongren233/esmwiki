@@ -1,9 +1,11 @@
 package moe.zr.esmwiki.producer.service.impl;
 
 import moe.zr.esmwiki.producer.config.QuickReplyConfig;
+import moe.zr.esmwiki.producer.util.ReplyUtils;
 import moe.zr.qqbot.entry.IMessageQuickReply;
 import moe.zr.qqbot.entry.Message;
 import moe.zr.service.SudoService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -12,9 +14,16 @@ import java.util.Map;
 @Service
 public class SudoServiceImpl implements SudoService {
     private final Map<String, IMessageQuickReply> messageHandlerMap;
-
-    public SudoServiceImpl(QuickReplyConfig quickReplyConfig) {
+    final
+    private ReplyUtils replyUtils;
+    public SudoServiceImpl(QuickReplyConfig quickReplyConfig, ReplyUtils replyUtils) {
         messageHandlerMap = quickReplyConfig.getMessageHandlerMap();
+        this.replyUtils = replyUtils;
+    }
+
+    public String sendGroupMessage(String message) {
+        replyUtils.sendGroupPostingMessage(message);
+        return "ok";
     }
 
     @Override
@@ -22,6 +31,9 @@ public class SudoServiceImpl implements SudoService {
         int length = str.length;
         if (length == 1) {
             return "喵呜";
+        }
+        if (str[1].equals(".sendGroup")) {
+            return sendGroupMessage(str[2]);
         }
         IMessageQuickReply iMessageQuickReply = messageHandlerMap.get(str[1]);
         if (iMessageQuickReply == null) {
