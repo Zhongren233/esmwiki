@@ -12,7 +12,7 @@ Aira机器人为免费+接受赞助，且只允许使用于ES群。若需要请�
 
 ### 指令列表
 
-`/pr`  `/sr` `/statme` `/bind` `今日运势`
+`/pr`  `/sr` `/statme` `/bind` `今日运势` `/birthday`
 
 #### /pr
 
@@ -48,9 +48,22 @@ Aira机器人为免费+接受赞助，且只允许使用于ES群。若需要请�
 
 ![img.png](docs/assets/bind_1.png)
 
+<details>
+<summary>昵称重复怎么办</summary>
 若游戏昵称重名，可根据实际情况按照id进行绑定。
 
-`/bind {userId} -id`后会获得随机五位数字，将游戏昵称改为随机五位数字后，再次输入`/bind {userId} -id`以进行绑定。
+![img.png](docs/assets/bind_2.png)
+
+按照point和rank筛选出自己的userId，之后使用`/bind {userId} -id`进行绑定。
+
+```
+    /bind 70937797 -id
+    游戏内改名
+    /bind 70937797 -id    
+```
+</details>
+
+
 
 > `{}`为占位符，请在输入指令时不要输入。
 > 
@@ -63,6 +76,11 @@ Aira机器人为免费+接受赞助，且只允许使用于ES群。若需要请�
 返回今日运势。
 
 注意：Aira不对任何由于今日运势导致的抽卡事故进行保证！
+
+#### /birthday
+
+'/birthday' 返回角色生日倒计时
+
 
 ### Q&A
 

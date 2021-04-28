@@ -35,4 +35,9 @@ class CharacterServiceImplTest {
         System.out.println(characterService.queryBirthDay("1月"));
         System.out.println(characterService.queryBirthDay("13月"));
     }
+
+    @Test
+    void testSc() {
+        characterService.checkBirthDay();
+    }
 }

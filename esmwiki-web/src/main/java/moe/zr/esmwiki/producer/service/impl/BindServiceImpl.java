@@ -42,6 +42,9 @@ public class BindServiceImpl implements IMessageQuickReply {
     public String onMessage(String[] str) {
         int length = str.length;
         Long qqNumber = Long.valueOf(str[str.length - 1]);
+        if (repository.findBindUserProfileByQqNumber(qqNumber) != null) {
+            return "你已经绑定过了！如需解绑请联系开发者";
+        }
         switch (length) {
             case 3:
             case 4:
@@ -57,21 +60,25 @@ public class BindServiceImpl implements IMessageQuickReply {
                     PointRanking realTime = stalkerService.getRealTimePointRanking(pointRanking);
                     String key = "BindService:" + qqNumber + "|" + userId;
                     String randomName = redisTemplate.opsForValue().get(key);
-                    if (randomName != null) if (randomName.equals(realTime.getUserProfile().getName())) {
-                        BindUserProfile bindUserProfile = new BindUserProfile();
-                        bindUserProfile.setQqNumber(qqNumber);
-                        bindUserProfile.setUserId(realTime.getUserId());
-                        repository.insert(bindUserProfile);
-                        return "绑定成功";
+                    if (randomName != null) {
+                        if (randomName.equals(realTime.getUserProfile().getName())) {
+                            BindUserProfile bindUserProfile = new BindUserProfile();
+                            bindUserProfile.setQqNumber(qqNumber);
+                            bindUserProfile.setUserId(realTime.getUserId());
+                            repository.insert(bindUserProfile);
+                            return "绑定成功";
+                        } else {
+                            return "重新进行绑定，请将游戏昵称设定为" + generalRandomCode(key) + "后，再次输入此命令";
+                        }
                     }
-                    return "正在进行绑定，请将游戏昵称设定为" + generalRandomInt(key) + "后，再次输入此命令";
-                } else return "没有查询到相关用户呢，QAQ\n如果想通过id绑定，请携带-id\n示例：/bind {userId} -id";
+                    return "开始进行绑定，请将游戏昵称设定为" + generalRandomCode(key) + "后，再次输入此命令";
+                }
             default:
                 return "好像格式不太正确，示例：/bind {userId} -id | /bind {userName}";
         }
     }
 
-    private String generalRandomInt(String key) {
+    private String generalRandomCode(String key) {
         int randInt = random.nextInt(89999) + 10000;
         String randomName = String.valueOf(randInt);
         redisTemplate.opsForValue().set(key, randomName, 5, TimeUnit.MINUTES);
