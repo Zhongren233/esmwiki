@@ -17,4 +17,15 @@ public class Message {
     String subType;
     Long Time;
     Long userId;
+
+    @Override
+    public String toString() {
+        return "Message{" +
+                "groupId=" + groupId +
+                ", messageType='" + messageType + '\'' +
+                ", rawMessage='" + rawMessage + '\'' +
+                ", Time=" + Time +
+                ", userId=" + userId +
+                '}';
+    }
 }

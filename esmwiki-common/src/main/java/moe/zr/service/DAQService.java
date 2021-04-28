@@ -1,5 +1,8 @@
 package moe.zr.service;
 
 public interface DAQService {
-     void saveAllRanking();
+    void saveAllRanking();
+
+    String dropCollection();
+
 }

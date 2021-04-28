@@ -1,5 +1,6 @@
 package moe.zr.esmwiki.producer.service.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import moe.zr.entry.Character;
 import moe.zr.esmwiki.producer.repository.CharacterRepository;
 import moe.zr.esmwiki.producer.util.ReplyUtils;
@@ -17,6 +18,7 @@ import java.util.List;
 
 @Service
 @EnableScheduling
+@Slf4j
 public class CharacterServiceImpl implements CharacterService, IMessageQuickReply {
     final
     CharacterRepository characterRepository;
@@ -32,23 +34,23 @@ public class CharacterServiceImpl implements CharacterService, IMessageQuickRepl
     @Override
     @Scheduled(cron = "0 0 19 * * ? ")
     public void checkBirthDay() {
-        String query = DateTimeFormatter.ofPattern("MM月dd日").format(MonthDay.now());
+        log.info("开始检查生日");
+        String query = DateTimeFormatter.ofPattern("MM月dd日").format(LocalDate.now().plusDays(1));
         List<Character> byBirthday = characterRepository.findByBirthday(query);
         if (!byBirthday.isEmpty()) {
-            StringBuilder stringBuilder = new StringBuilder("明天是 ");
+            String message = null;
             switch (byBirthday.size()) {
                 case 1:
-                    stringBuilder.append(byBirthday.get(0).getName());
-                    stringBuilder.append(" 的生日");
+                    message = "明天是 " + byBirthday.get(0).getName() + " 的生日，下单的生日套就要到了，超love～";
                     break;
                 case 2:
-                    stringBuilder.append(byBirthday.get(0).getName());
-                    stringBuilder.append(" 和 ");
-                    stringBuilder.append(byBirthday.get(1).getName());
-                    stringBuilder.append("的生日");
+                    message = "明天是 " + byBirthday.get(0).getName() + " 和 " + byBirthday.get(1).getName() + " 的生日，无论哪个都好love～，都好喜欢，大好き♪";
                     break;
             }
-            replyUtils.sendGroupPostingMessage(stringBuilder.toString());
+            log.info(message);
+            replyUtils.sendGroupPostingMessage(message);
+        } else {
+            log.info("明天没人过生日");
         }
 
 
@@ -67,7 +69,7 @@ public class CharacterServiceImpl implements CharacterService, IMessageQuickRepl
             LocalDate localDate = from.atYear(now.getYear());
             long l = localDate.toEpochDay() - now.toEpochDay();
             if (l == 0) {
-                stringBuilder.append("今天是 ").append(character.getName()).append(" 的生日！");
+                stringBuilder.append("今天是 ").append(character.getName()).append(" 的生日！开哪张卡的矿路呢～都超级love啊～");
             }
             if (l > 0) {
                 stringBuilder.append("距离 ").append(character.getName()).append(" 的生日还有 ").append(l).append(" 天");

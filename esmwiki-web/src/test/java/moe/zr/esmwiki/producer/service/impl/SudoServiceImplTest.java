@@ -14,8 +14,8 @@ class SudoServiceImplTest {
     @Test
     void onMessage() {
         Message message = new Message();
-        message.setGroupId(1L);
-        message.setRawMessage("/sudo /stk 70001701 -id");
+        message.setGroupId(773891409L);
+        message.setRawMessage("/sudo .sendGroup 测试");
         System.out.println(sudoService.onMessage(message));
     }
 }
