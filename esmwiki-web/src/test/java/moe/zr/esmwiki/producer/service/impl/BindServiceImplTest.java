@@ -14,7 +14,7 @@ class BindServiceImplTest {
     void onMessage() {
         Message message = new Message();
         message.setUserId(732713726L);
-        String rawMessage = "/bind 小杏";
+        String rawMessage = "/bind 46707 -friend";
         message.setRawMessage(rawMessage);
         String s = bindService.onMessage(message);
         System.out.println(s);
