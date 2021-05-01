@@ -37,9 +37,10 @@ public class QuickReplyServiceImpl {
 
     public ObjectNode handle(JsonNode jsonNode) throws JsonProcessingException {
         Message message = mapper.treeToValue(jsonNode, Message.class);
+        message.setRawMessage(message.getRawMessage().trim());
         log.info("收到讯息:{}", message.toString());
         String rawMessage = message.getRawMessage();
-        if (rawMessage == null) {
+        if (rawMessage == null || rawMessage.isEmpty()) {
             return null;
         }
         String command = rawMessage.split(" ")[0];
