@@ -57,7 +57,7 @@ public class EventNoticeServiceImpl implements IMessageQuickReply {
         if (hours < 0) {
             return "你醒了？活动结束了";
         }
-        if (days == 0) {
+        if (days != 0) {
             return "距离活动结束还有" + days + "天(" + hours + ")小时";
         } else {
             return "距离活动结束还有" + hours + "小时!!!!!!!!!!!!!!!";
