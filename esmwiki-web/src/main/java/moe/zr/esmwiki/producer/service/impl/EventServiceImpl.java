@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import io.lettuce.core.internal.Futures;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import moe.zr.enums.EventRankingNavigationType;
@@ -16,8 +15,6 @@ import moe.zr.esmwiki.producer.util.ReplyUtils;
 import moe.zr.esmwiki.producer.util.RequestUtils;
 import moe.zr.pojo.PointRanking;
 import moe.zr.pojo.ScoreRanking;
-import moe.zr.qqbot.entry.IMessageQuickReply;
-import moe.zr.qqbot.entry.Message;
 import moe.zr.service.EventService;
 import moe.zr.service.PointRankingService;
 import moe.zr.service.SongRankingService;
@@ -27,13 +24,11 @@ import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
 import org.msgpack.MessagePack;
 import org.msgpack.type.Value;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
-import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
@@ -43,7 +38,10 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Service
 @Slf4j
