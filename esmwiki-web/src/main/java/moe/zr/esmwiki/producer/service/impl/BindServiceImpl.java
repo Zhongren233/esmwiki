@@ -128,6 +128,9 @@ public class BindServiceImpl implements IMessageQuickReply {
             return "绑定功能暂不可用";
         String s = message.getRawMessage() + " " + message.getUserId();
         String[] split = s.split(" ");
+        if (split.length==2) {
+            return "绑定请参考文档：https://github.com/Zhongren233/esmwiki/blob/master/README.md";
+        }
         return onMessage(split);
     }
 
