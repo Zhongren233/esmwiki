@@ -36,7 +36,7 @@ public class EventNoticeServiceImpl implements IMessageQuickReply {
             return;
         }
         if (days == 0) {
-            utils.sendGroupPostingMessage("距离活动结束还有" + days + "天(" + hours + ")小时");
+            utils.sendGroupPostingMessage("距离活动结束还有" + days + "天(" + hours + "小时)");
         } else {
             utils.sendGroupPostingMessage("距离活动结束还有" + hours + "小时!!!!!!!!!!!!!!!");
         }
@@ -58,7 +58,7 @@ public class EventNoticeServiceImpl implements IMessageQuickReply {
             return "你醒了？活动结束了";
         }
         if (days != 0) {
-            return "距离活动结束还有" + days + "天(" + hours + ")小时";
+            return "距离活动结束还有" + days + "天(" + hours + "小时)";
         } else {
             return "距离活动结束还有" + hours + "小时!!!!!!!!!!!!!!!";
         }
