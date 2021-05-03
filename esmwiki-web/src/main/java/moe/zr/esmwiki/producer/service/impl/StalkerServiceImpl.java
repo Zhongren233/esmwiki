@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -142,22 +143,37 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
         return realtime;
     }
 
+
     /**
      * /stk {userArg} {option}
      */
     @Override
     public String onMessage(String[] str) {
+        if (eventConfig.getIsUnAvailable()) {
+            return "当前不是活动时间";
+        }
         int length = str.length;
         if (length < 2) {
             return "/stk {userName}  {option}";
         }
-        String userArg;
+        String userArg = str[1];
         String option = null;
         switch (length) {
             case 3:
                 option = str[2];
+                if ("-rank".equals(option)) {
+                    Integer rank = Integer.valueOf(userArg);
+                    try {
+                        PointRanking pointRankingByRank = getPointRankingByRank(rank);
+                        return MessageFormat.format(
+                                "昵称:{0}\n" +
+                                "活动排名:{1}\n" +
+                                "活动点数:{2}", pointRankingByRank.getUserProfile().getName(), pointRankingByRank.getRank(), pointRankingByRank.getPoint());
+                    } catch (Exception e) {
+                        return e.getMessage();
+                    }
+                }
             case 2:
-                userArg = str[1];
                 Integer userId;
                 try {
                     userId = getUserId(userArg, option);
@@ -169,11 +185,19 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
         return "/stk {userArg} {option}";
     }
 
+    public PointRanking getPointRankingByRank(Integer rank) throws InterruptedException, ExecutionException, BadPaddingException, IllegalBlockSizeException, IOException {
+        int page = (rank / 20) + 1;
+        List<PointRanking> pointRankings = pointRankingService.getPointRankings(page);
+        if (rank < 20) {
+            return pointRankings.get(rank - 1);
+        } else {
+            int index = (rank - 21) % 20;
+            return pointRankings.get(index);
+        }
+    }
+
     @Override
     public String getReturnString(Integer userId) {
-        if (eventConfig.getIsUnAvailable()) {
-            return "当前不是活动时间";
-        }
         Optional<PointRanking> optionalPointRanking = getPointRanking(userId);
         Optional<ScoreRanking> optionalScoreRanking = getScoreRanking(userId);
         StringBuilder stringBuilder = new StringBuilder();

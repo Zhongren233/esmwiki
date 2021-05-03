@@ -58,9 +58,9 @@ public class PointRankingServiceImpl implements PointRankingService {
         this.pointRankingRepository = pointRankingRepository;
     }
 
-    public List<PointRanking> getPointRankings(Integer integer) throws IllegalBlockSizeException, ExecutionException, BadPaddingException, IOException {
+    public List<PointRanking> getPointRankings(Integer page) throws IllegalBlockSizeException, ExecutionException, BadPaddingException, IOException {
         mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
-        JsonNode rankingRecord = getRankingRecord(integer);
+        JsonNode rankingRecord = getRankingRecord(page);
         JavaType javaType = mapper.getTypeFactory().constructParametricType(ArrayList.class, PointRanking.class);
         return mapper.readValue(rankingRecord.get("ranking").toString(), javaType);
     }

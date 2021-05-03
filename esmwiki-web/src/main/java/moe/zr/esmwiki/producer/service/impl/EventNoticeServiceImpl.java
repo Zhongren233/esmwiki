@@ -3,7 +3,6 @@ package moe.zr.esmwiki.producer.service.impl;
 import moe.zr.esmwiki.producer.config.EventConfig;
 import moe.zr.esmwiki.producer.util.ReplyUtils;
 import moe.zr.qqbot.entry.IMessageQuickReply;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -18,50 +17,73 @@ public class EventNoticeServiceImpl implements IMessageQuickReply {
     final
     EventConfig eventConfig;
     private LocalDateTime endDateTime;
+    private LocalDateTime startDateTime;
     final
     ReplyUtils utils;
 
     public EventNoticeServiceImpl(EventConfig eventConfig, ReplyUtils utils) {
         this.eventConfig = eventConfig;
-        endDateTime = eventConfig.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().plusDays(8).plusHours(10);
+        startDateTime = eventConfig.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+        endDateTime = startDateTime.plusDays(8).plusHours(10);
         this.utils = utils;
     }
 
     @Scheduled(cron = "0 59 7,15,20 * * ? ")
     public void checkEndTime() {
-        Duration between = getDuration();
-        long hours = between.toHours();
-        long days = between.toDays();
-        if (hours <= 0) {
-            return;
-        }
-        if (days == 0) {
-            utils.sendGroupPostingMessage("距离活动结束还有" + days + "天(" + hours + ")小时");
-        } else {
-            utils.sendGroupPostingMessage("距离活动结束还有" + hours + "小时!!!!!!!!!!!!!!!");
+        if (eventConfig.getIsOpen()) {
+            Duration between = getEndDuration();
+            long hours = between.toHoursPart();
+            long days = between.toDaysPart();
+            if (hours <= 0) {
+                return;
+            }
+            if (days == 0) {
+                utils.sendGroupPostingMessage("距离活动结束还有" + days + "天" + hours + "小时");
+            } else {
+                utils.sendGroupPostingMessage("距离活动结束还有" + hours + "小时!!!!!!!!!!!!!!!");
+            }
         }
     }
 
-    private Duration getDuration() {
+    private Duration getEndDuration() {
         LocalDateTime now = LocalDateTime.now();
         return Duration.between(now, endDateTime);
     }
 
+    private Duration getStartDuration() {
+        return Duration.between(LocalDateTime.now(), startDateTime);
+    }
+
     public String getCountDownString() {
-        Duration duration = getDuration();
-        long hours = duration.toHours();
-        long days = duration.toDays();
-        if (hours == 0) {
-            return "没救了 等死吧";
+        if (eventConfig.getIsOpen()) {
+            Duration duration = getEndDuration();
+            long hours = duration.toHoursPart();
+            long days = duration.toDaysPart();
+            if (hours == 0) {
+                return "没救了 等死吧";
+            }
+            if (days != 0) {
+                return "距离活动结束还有" + days + "天" + hours + "小时)";
+            } else {
+                return "距离活动结束还有" + hours + "小时!!!!!!!!!!!!!!!";
+            }
         }
-        if (hours < 0) {
-            return "你醒了？活动结束了";
+
+        if (eventConfig.getIsEnd()) {
+            return "你醒了？活动结束了。";
         }
-        if (days != 0) {
-            return "距离活动结束还有" + days + "天(" + hours + ")小时";
-        } else {
-            return "距离活动结束还有" + hours + "小时!!!!!!!!!!!!!!!";
+
+        if (eventConfig.getIsAnnounce()) {
+            Duration startDuration = getStartDuration();
+            long hours = startDuration.toHoursPart();
+            long days = startDuration.toDaysPart();
+            if (days != 0) {
+                return "距离活动开始还有" + days + "天" + hours + "小时)";
+            } else {
+                return "距离活动开始还有" + hours + "小时!!!!!!";
+            }
         }
+        return null;
     }
 
     @Override
