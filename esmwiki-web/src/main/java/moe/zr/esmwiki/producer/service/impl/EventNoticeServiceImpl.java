@@ -7,6 +7,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.text.MessageFormat;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -38,9 +39,9 @@ public class EventNoticeServiceImpl implements IMessageQuickReply {
                 return;
             }
             if (days == 0) {
-                utils.sendGroupPostingMessage("距离活动结束还有" + days + "天" + hours + "小时");
+                utils.sendGroupPostingMessage(MessageFormat.format("距离活动结束还有{0}天{1}小时", days, hours));
             } else {
-                utils.sendGroupPostingMessage("距离活动结束还有" + hours + "小时!!!!!!!!!!!!!!!");
+                utils.sendGroupPostingMessage(MessageFormat.format("距离活动结束还有{0}小时!!!!!!!!!!!!!!!", hours));
             }
         }
     }
@@ -63,9 +64,9 @@ public class EventNoticeServiceImpl implements IMessageQuickReply {
                 return "没救了 等死吧";
             }
             if (days != 0) {
-                return "距离活动结束还有" + days + "天" + hours + "小时)";
+                return MessageFormat.format("距离活动结束还有{0}天{1}小时", days, hours);
             } else {
-                return "距离活动结束还有" + hours + "小时!!!!!!!!!!!!!!!";
+                return MessageFormat.format("距离活动结束还有{0}小时!!!!!!!!!!!!!!!", hours);
             }
         }
 
@@ -78,9 +79,9 @@ public class EventNoticeServiceImpl implements IMessageQuickReply {
             long hours = startDuration.toHoursPart();
             long days = startDuration.toDaysPart();
             if (days != 0) {
-                return "距离活动开始还有" + days + "天" + hours + "小时)";
+                return MessageFormat.format("距离活动开始还有{0}天{1}小时", days, hours);
             } else {
-                return "距离活动开始还有" + hours + "小时!!!!!!";
+                return MessageFormat.format("距离活动开始还有{0}小时!!!!!!", hours);
             }
         }
         return null;
