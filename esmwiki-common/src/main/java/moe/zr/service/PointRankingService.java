@@ -16,7 +16,7 @@ import java.util.concurrent.ExecutionException;
 public interface PointRankingService extends IMessageQuickReply {
     JsonNode getRankingRecord(Integer page) throws IOException, BadPaddingException, IllegalBlockSizeException, ParseException, ExecutionException, InterruptedException;
 
-    List<PointRanking> getPointRankings(Integer integer) throws IllegalBlockSizeException, ExecutionException, InterruptedException, BadPaddingException, IOException;
+    List<PointRanking> getPointRankings(Integer page) throws IllegalBlockSizeException, ExecutionException, InterruptedException, BadPaddingException, IOException;
 
     JsonNode getRankingRecord(EventRankingNavigationType type) throws IOException, BadPaddingException, IllegalBlockSizeException, ParseException, ExecutionException, InterruptedException;
 
