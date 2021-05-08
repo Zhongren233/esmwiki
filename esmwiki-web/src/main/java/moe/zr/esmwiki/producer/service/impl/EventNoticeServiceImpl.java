@@ -38,7 +38,7 @@ public class EventNoticeServiceImpl implements IMessageQuickReply {
             if (hours <= 0) {
                 return;
             }
-            if (days == 0) {
+            if (days != 0) {
                 utils.sendGroupPostingMessage(MessageFormat.format("距离活动结束还有{0}天{1}小时", days, hours));
             } else {
                 utils.sendGroupPostingMessage(MessageFormat.format("距离活动结束还有{0}小时!!!!!!!!!!!!!!!", hours));
