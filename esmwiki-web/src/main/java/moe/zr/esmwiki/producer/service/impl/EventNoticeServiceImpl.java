@@ -60,7 +60,7 @@ public class EventNoticeServiceImpl implements IMessageQuickReply {
             Duration duration = getEndDuration();
             long hours = duration.toHoursPart();
             long days = duration.toDaysPart();
-            if (hours == 0) {
+            if (hours == 0&& days == 0) {
                 return "没救了 等死吧";
             }
             if (days != 0) {
