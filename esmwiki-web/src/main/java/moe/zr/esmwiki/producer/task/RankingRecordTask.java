@@ -132,6 +132,7 @@ public class RankingRecordTask {
                     sendTodayEventSongRankingInfo();
             log.info(message);
             replyUtils.sendMessage(message);
+            replyUtils.sendMessage(message, 1007284053L);
         }
     }
 
