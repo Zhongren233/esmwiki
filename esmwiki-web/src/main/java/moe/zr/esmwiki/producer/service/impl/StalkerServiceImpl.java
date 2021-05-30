@@ -198,6 +198,9 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
 
     @Override
     public String getReturnString(Integer userId) {
+        if (eventConfig.getIsUnAvailable()) {
+            return "当前不是活动时间";
+        }
         Optional<PointRanking> optionalPointRanking = getPointRanking(userId);
         Optional<ScoreRanking> optionalScoreRanking = getScoreRanking(userId);
         StringBuilder stringBuilder = new StringBuilder();
