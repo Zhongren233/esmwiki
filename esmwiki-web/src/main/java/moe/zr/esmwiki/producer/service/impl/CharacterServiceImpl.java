@@ -10,6 +10,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.MonthDay;
 import java.time.format.DateTimeFormatter;
@@ -41,10 +42,10 @@ public class CharacterServiceImpl implements CharacterService, IMessageQuickRepl
             String message = null;
             switch (byBirthday.size()) {
                 case 1:
-                    message = "明天是 " + byBirthday.get(0).getName() + " 的生日，下单的生日套就要到了，超love～";
+                    message = MessageFormat.format("明天是 {0} 的生日，下单的生日套就要到了，超love～", byBirthday.get(0).getName());
                     break;
                 case 2:
-                    message = "明天是 " + byBirthday.get(0).getName() + " 和 " + byBirthday.get(1).getName() + " 的生日，无论哪个都好love～，都好喜欢，大好き♪";
+                    message = MessageFormat.format("明天是 {0} 和 {1} 的生日，无论哪个都好love～，都好喜欢，大好き♪", byBirthday.get(0).getName(), byBirthday.get(1).getName());
                     break;
             }
             log.info(message);
