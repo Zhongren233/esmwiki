@@ -138,7 +138,7 @@ public class EventServiceImpl implements EventService {
                 }
             });
         }
-        if (latch.await(60, TimeUnit.SECONDS)) {
+        if (latch.await(90, TimeUnit.SECONDS)) {
             return new AsyncResult<>(totalPages);
         } else {
             throw new TimeoutException("爬取PointRanking时超时了，呜呜呜");
@@ -193,7 +193,7 @@ public class EventServiceImpl implements EventService {
                 }
             });
         }
-        if (latch.await(60, TimeUnit.SECONDS)) {
+        if (latch.await(90, TimeUnit.SECONDS)) {
             return new AsyncResult<>(totalPages);
         } else {
             throw new TimeoutException("爬取ScoreRanking时超时了，呜呜呜");
