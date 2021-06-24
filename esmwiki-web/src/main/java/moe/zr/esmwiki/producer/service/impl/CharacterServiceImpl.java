@@ -69,6 +69,7 @@ public class CharacterServiceImpl implements CharacterService, IMessageQuickRepl
             MonthDay from = MonthDay.from(parse);
             LocalDate localDate = from.atYear(now.getYear());
             long l = localDate.toEpochDay() - now.toEpochDay();
+            if (l < 0) continue;
             if (l == 0) {
                 stringBuilder.append("今天是 ").append(character.getName()).append(" 的生日！开哪张卡的矿路呢～都超级love啊～");
             }
