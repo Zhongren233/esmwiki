@@ -26,19 +26,20 @@ public class QuickReplyServiceImpl {
     final
     EsmHttpClient httpClient;
     private final Map<String, IMessageQuickReply> messageHandlerMap;
-    @Autowired
+    final
     SudoService sudoService;
 
-    public QuickReplyServiceImpl(ObjectMapper mapper, ApplicationContext context, EsmHttpClient httpClient, QuickReplyConfig quickReplyConfig) {
+    public QuickReplyServiceImpl(ObjectMapper mapper, ApplicationContext context, EsmHttpClient httpClient, QuickReplyConfig quickReplyConfig, SudoService sudoService) {
         this.mapper = mapper;
         this.httpClient = httpClient;
         messageHandlerMap = quickReplyConfig.getMessageHandlerMap();
+        this.sudoService = sudoService;
     }
 
     public ObjectNode handle(JsonNode jsonNode) throws JsonProcessingException {
         Message message = mapper.treeToValue(jsonNode, Message.class);
         message.setRawMessage(message.getRawMessage().trim());
-        log.info("收到讯息:{}", message.toString());
+        log.info("收到讯息:{}", message);
         String rawMessage = message.getRawMessage();
         if (rawMessage == null || rawMessage.isEmpty()) {
             return null;
