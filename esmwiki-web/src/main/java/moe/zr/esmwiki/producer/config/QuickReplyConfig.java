@@ -14,7 +14,12 @@ public class QuickReplyConfig {
     public QuickReplyConfig(ApplicationContext context) {
         Map<String, IMessageQuickReply> beansOfType = context.getBeansOfType(IMessageQuickReply.class);
         System.out.println(beansOfType);
-        beansOfType.forEach((k, v) -> messageHandlerMap.put(v.commandPrefix(), v));
+        beansOfType.forEach((k, v) -> {
+            String[] split = v.commandPrefix().split("\\|");
+            for (String s : split) {
+                messageHandlerMap.put(s, v);
+            }
+        });
     }
 
     public HashMap<String, IMessageQuickReply> getMessageHandlerMap() {

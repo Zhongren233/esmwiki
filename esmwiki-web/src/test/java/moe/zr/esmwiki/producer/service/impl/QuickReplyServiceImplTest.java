@@ -15,9 +15,10 @@ class QuickReplyServiceImplTest {
     @Test
     void sendMessage() throws JsonProcessingException {
         ObjectNode objectNode = new ObjectMapper().createObjectNode();
-        objectNode.put("raw_message", "今日运势");
+        objectNode.put("raw_message", "ycm");
         objectNode.put("message_type", "group");
-        objectNode.put("user_id", 123456);
+        objectNode.put("user_id", 123457);
+        objectNode.put("time", System.currentTimeMillis() / 1000);
         System.out.println(botService.handle(objectNode));
     }
 }
