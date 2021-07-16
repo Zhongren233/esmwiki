@@ -92,9 +92,6 @@ public class EventConfig implements IMessageQuickReply {
     public String onMessage(String[] str) {
         if (str.length > 2) {
             switch (str[1]) {
-                case "save":
-                    saveConfig();
-                    return "success";
                 case "date":
                     if (date != null) {
                         return "已有任务:" + dateTimeInstance.format(date);
