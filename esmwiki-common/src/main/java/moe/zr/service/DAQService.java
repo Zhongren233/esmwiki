@@ -5,4 +5,5 @@ public interface DAQService {
 
     String dropCollection();
 
+    String mergeCollection();
 }

@@ -1,5 +1,7 @@
 package moe.zr.esmwiki.producer.service.impl;
 
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoDatabase;
 import lombok.extern.slf4j.Slf4j;
 import moe.zr.esmwiki.producer.util.ReplyUtils;
 import moe.zr.pojo.PointRanking;
@@ -8,8 +10,11 @@ import moe.zr.qqbot.entry.IMessageQuickReply;
 import moe.zr.qqbot.entry.Message;
 import moe.zr.service.DAQService;
 import moe.zr.service.EventService;
+import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.redis.connection.RedisZSetCommands;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -19,6 +24,9 @@ import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -83,16 +91,31 @@ public class DAQServiceImpl implements DAQService, IMessageQuickReply {
         return "删除集合成功";
     }
 
+    @Autowired
+    MongoClient mongoClient;
+    public String mergeCollection() {
+        MongoDatabase esmusic = mongoClient.getDatabase("ESMUSIC");
+        replyUtils.sendMessage("merging point rankings....");
+        esmusic.getCollection("pointRanking").aggregate(Collections.singletonList(new Document("$merge",
+                new Document("into", "pastPointRanking")))).toCollection();
+        replyUtils.sendMessage("merging score rankings....");
+        esmusic.getCollection("scoreRanking").aggregate(Collections.singletonList(new Document("$merge",
+                new Document("into", "pastScoreRanking")))).toCollection();
+
+        return null;
+    }
+
     @Override
     public String onMessage(String[] str) {
-        switch (str[2]) {
+        switch (str[1]) {
             case "get":
                 saveAllRanking();
                 return "手动进行爬榜";
             case "drop":
                 return dropCollection();
+            case "merge":
+                return mergeCollection();
         }
-
         return null;
     }
 
