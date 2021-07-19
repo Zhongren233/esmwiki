@@ -7,14 +7,14 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @EqualsAndHashCode(callSuper = true)
-@Document(collection = "pointRankingRecord")
+@Document(collection = "newPointRankingRecord")
 @Getter
 @Setter
 public class PointRankingRecord extends RankingRecord {
     @Id
     private String id;
 
-    public PointRankingRecord(String currentTime, Integer eventId, Integer point, Integer rank) {
+    public PointRankingRecord(Long currentTime, Integer eventId, Integer point, Integer rank) {
         super(currentTime, eventId, point, rank);
     }
 
