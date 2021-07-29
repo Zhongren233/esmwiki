@@ -5,8 +5,7 @@ import moe.zr.pojo.RankingRecord;
 
 public class ParseUtils {
     public static RankingRecord getRecord(JsonNode jsonNode, Integer offset) {
-        String currentTime = jsonNode.get("current_time").textValue();
-        String date = currentTime.substring(0, 16);
+        long date = System.currentTimeMillis() / 60000 * 60000;
         JsonNode ranking = jsonNode.get("ranking");
         JsonNode x = ranking.get(offset);
         int point = x.get("point").asInt();
