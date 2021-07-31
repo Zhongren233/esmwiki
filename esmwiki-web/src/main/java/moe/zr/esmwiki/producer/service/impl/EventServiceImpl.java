@@ -119,9 +119,7 @@ public class EventServiceImpl implements EventService {
                                 log.warn("发生异常:{}", e.getMessage());
                             }
                         }
-                        //好像不接一下返回值会出现意想不到的bug 具体我也不知道什么情况
-                        List<PointRanking> insert = pointRankingRepository.insert(pointRankings);
-                        log.debug("{}", insert);
+                        pointRankingRepository.insertAsync(pointRankings);
                     }
                 }
 
@@ -176,7 +174,7 @@ public class EventServiceImpl implements EventService {
                                 log.warn("发生异常:{}", e.getMessage());
                             }
                         });
-                        scoreRankingRepository.insert(scoreRankings);
+                        scoreRankingRepository.insertAsync(scoreRankings);
                     }
                 }
 
