@@ -7,7 +7,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @EqualsAndHashCode(callSuper = true)
-@Document(collection = "newSongRankingRecord")
+@Document(collection = "songRankingRecord")
 @Getter
 @Setter
 public class SongRankingRecord extends RankingRecord {
