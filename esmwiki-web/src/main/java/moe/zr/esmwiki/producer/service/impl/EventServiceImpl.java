@@ -1,10 +1,13 @@
 package moe.zr.esmwiki.producer.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoDatabase;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import moe.zr.enums.EventRankingNavigationType;
@@ -13,8 +16,8 @@ import moe.zr.esmwiki.producer.repository.ScoreRankingRepository;
 import moe.zr.esmwiki.producer.util.CryptoUtils;
 import moe.zr.esmwiki.producer.util.ReplyUtils;
 import moe.zr.esmwiki.producer.util.RequestUtils;
-import moe.zr.pojo.PointRanking;
-import moe.zr.pojo.ScoreRanking;
+import moe.zr.pojo.PointRankingTmp;
+import moe.zr.pojo.ScoreRankingTmp;
 import moe.zr.service.EventService;
 import moe.zr.service.PointRankingService;
 import moe.zr.service.SongRankingService;
@@ -22,8 +25,11 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.concurrent.FutureCallback;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.bson.Document;
 import org.msgpack.MessagePack;
 import org.msgpack.type.Value;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.AsyncResult;
@@ -35,11 +41,11 @@ import javax.crypto.IllegalBlockSizeException;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -59,12 +65,15 @@ public class EventServiceImpl implements EventService {
     PointRankingService pointRankingService;
     final
     SongRankingService songRankingService;
-
     final
     StringRedisTemplate stringRedisTemplate;
 
+    @Autowired
+    MongoTemplate template;
 
-    public EventServiceImpl(CloseableHttpAsyncClient eventClient, PointRankingRepository pointRankingRepository, ScoreRankingRepository scoreRankingRepository, PointRankingService pointRankingService, SongRankingService songRankingService, ObjectMapper mapper, RequestUtils requestUtils, StringRedisTemplate stringRedisTemplate, ReplyUtils replyUtils) {
+    private final MongoDatabase esmusic;
+
+    public EventServiceImpl(CloseableHttpAsyncClient eventClient, PointRankingRepository pointRankingRepository, ScoreRankingRepository scoreRankingRepository, PointRankingService pointRankingService, SongRankingService songRankingService, ObjectMapper mapper, RequestUtils requestUtils, StringRedisTemplate stringRedisTemplate, ReplyUtils replyUtils, MongoClient mongoClient) {
         this.httpClient = eventClient;
         this.pointRankingRepository = pointRankingRepository;
         this.scoreRankingRepository = scoreRankingRepository;
@@ -74,6 +83,7 @@ public class EventServiceImpl implements EventService {
         this.requestUtils = requestUtils;
         this.stringRedisTemplate = stringRedisTemplate;
         this.replyUtils = replyUtils;
+        this.esmusic = mongoClient.getDatabase("ESMUSIC");
     }
 
     final
@@ -90,13 +100,17 @@ public class EventServiceImpl implements EventService {
     }
 
     @Async
-    public AsyncResult<Integer> saveAllPointRanking() throws BadPaddingException, InterruptedException, ParseException, IOException, ExecutionException, IllegalBlockSizeException, TimeoutException {
+    public AsyncResult<Long> saveAllPointRanking() throws BadPaddingException, InterruptedException, ParseException, IOException, ExecutionException, IllegalBlockSizeException, TimeoutException {
+        ObjectReader reader = mapper.readerFor(new TypeReference<List<PointRankingTmp>>() {
+        });
+        long old = System.currentTimeMillis();
         String uri = "https://saki-server.happyelements.cn/get/events/point_ranking";
         JsonNode record = pointRankingService.getRankingRecord(1);
         mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         int totalPages = record.get("total_pages").intValue();
         int eventId = record.get("eventId").intValue();
         CountDownLatch latch = new CountDownLatch(totalPages);
+        template.dropCollection(PointRankingTmp.class);
         for (int i = 1; i <= totalPages; i++) {
             HttpPost httpPost = requestUtils.buildHttpRequest(uri, initContent(i));
             httpClient.execute(httpPost, new FutureCallback<>() {
@@ -109,17 +123,9 @@ public class EventServiceImpl implements EventService {
                         log.warn("状态码不等于200,返回的正文:{}", jsonNode);
                     } else {
                         ArrayNode rankings = (ArrayNode) jsonNode.get("ranking");
-                        ArrayList<PointRanking> pointRankings = new ArrayList<>(20);
-                        for (JsonNode ranking : rankings) {
-                            try {
-                                PointRanking pointRanking = mapper.treeToValue(ranking, PointRanking.class);
-                                pointRanking.setEventId(eventId);
-                                pointRankings.add(pointRanking);
-                            } catch (JsonProcessingException e) {
-                                log.warn("发生异常:{}", e.getMessage());
-                            }
-                        }
-                        pointRankingRepository.insertAsync(pointRankings);
+                        List<PointRankingTmp> pointRankings = reader.readValue(rankings);
+                        pointRankings.forEach(pointRanking -> pointRanking.setEventId(eventId));
+                        template.insertAll(pointRankings);
                     }
                 }
 
@@ -136,22 +142,34 @@ public class EventServiceImpl implements EventService {
                 }
             });
         }
-        if (latch.await(90, TimeUnit.SECONDS)) {
-            return new AsyncResult<>(totalPages);
-        } else {
-            throw new TimeoutException("爬取PointRanking时超时了，呜呜呜");
-
+        if (!latch.await(90, TimeUnit.SECONDS)) {
+            log.warn("timeout");
+            replyUtils.sendMessage("爬取PointRanking时超时了，呜呜呜");
         }
+        timeOutCheck(latch);
+        log.info("开始合并pointRanking");
+        esmusic.getCollection("pointRankingTmp").aggregate(Arrays.asList(new Document("$unset", "_id"),
+                new Document("$merge",
+                        new Document("into", "pointRanking")
+                                .append("on", "userId")
+                                .append("whenMatched", "replace")
+                                .append("whenNotMatched", "insert")))).toCollection();
+        log.info("pointRanking合并结束");
+        return new AsyncResult<>(System.currentTimeMillis() - old);
     }
 
     @Async
-    public AsyncResult<Integer> saveAllScoreRanking() throws BadPaddingException, InterruptedException, ParseException, IOException, ExecutionException, IllegalBlockSizeException, TimeoutException {
+    public AsyncResult<Long> saveAllScoreRanking() throws BadPaddingException, InterruptedException, ParseException, IOException, ExecutionException, IllegalBlockSizeException, TimeoutException {
+        ObjectReader reader = mapper.readerFor(new TypeReference<List<ScoreRankingTmp>>() {
+        });
+        long old = System.currentTimeMillis();
         String uri = "https://saki-server.happyelements.cn/get/events/score_ranking";
         JsonNode record = songRankingService.getSongRankingRecord(1);
         mapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
         int totalPages = record.get("total_pages").intValue();
         int eventId = record.get("eventId").intValue();
         CountDownLatch latch = new CountDownLatch(totalPages);
+        template.dropCollection(ScoreRankingTmp.class);
         for (int i = 1; i <= totalPages; i++) {
             HttpPost httpPost = requestUtils.buildHttpRequest(uri, initContent(i));
             httpClient.execute(httpPost, new FutureCallback<>() {
@@ -164,17 +182,9 @@ public class EventServiceImpl implements EventService {
                         log.warn("状态码不等于200,返回的正文:{}", jsonNode);
                     } else {
                         JsonNode rankings = jsonNode.get("ranking");
-                        ArrayList<ScoreRanking> scoreRankings = new ArrayList<>(20);
-                        rankings.forEach(ranking -> {
-                            try {
-                                ScoreRanking scoreRanking = mapper.treeToValue(ranking, ScoreRanking.class);
-                                scoreRanking.setEventId(eventId);
-                                scoreRankings.add(scoreRanking);
-                            } catch (JsonProcessingException e) {
-                                log.warn("发生异常:{}", e.getMessage());
-                            }
-                        });
-                        scoreRankingRepository.insertAsync(scoreRankings);
+                        List<ScoreRankingTmp> tmps = reader.readValue(rankings);
+                        tmps.forEach(scoreRankingTmp -> scoreRankingTmp.setEventId(eventId));
+                        template.insertAll(tmps);
                     }
                 }
 
@@ -191,11 +201,28 @@ public class EventServiceImpl implements EventService {
                 }
             });
         }
-        if (latch.await(90, TimeUnit.SECONDS)) {
-            return new AsyncResult<>(totalPages);
-        } else {
-            throw new TimeoutException("爬取ScoreRanking时超时了，呜呜呜");
+        if (!latch.await(90, TimeUnit.SECONDS)) {
+            log.warn("timeout");
+            replyUtils.sendMessage("爬取ScoreRankings时超时了，呜呜呜");
         }
+        timeOutCheck(latch);
+        log.info("开始合并scoreRanking");
+        esmusic.getCollection("scoreRanking").aggregate(Arrays.asList(new Document("$unset", "_id"),
+                new Document("$merge",
+                        new Document("into", "pointRanking")
+                                .append("on", "userId")
+                                .append("whenMatched", "replace")
+                                .append("whenNotMatched", "insert")))).toCollection();
+
+        log.info("scoreRanking合并结束");
+        return new AsyncResult<>(System.currentTimeMillis() - old);
+    }
+
+    private void timeOutCheck(CountDownLatch latch) throws InterruptedException, TimeoutException {
+        if (!latch.await(90, TimeUnit.SECONDS)) {
+            throw new TimeoutException("二次超时，放弃更新数据库！");
+        }
+        log.info("check ok");
     }
 
 

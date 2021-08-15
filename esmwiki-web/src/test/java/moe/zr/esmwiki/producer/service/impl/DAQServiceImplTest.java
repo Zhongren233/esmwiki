@@ -12,7 +12,7 @@ class DAQServiceImplTest {
     DAQService daqService;
     @Test
     void saveAllRanking() throws InterruptedException {
-        daqService.mergeCollection();
-        Thread.sleep(30*1000);
+        daqService.saveAllRanking();
+        Thread.sleep(360*1000);
     }
 }
