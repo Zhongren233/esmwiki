@@ -207,9 +207,9 @@ public class EventServiceImpl implements EventService {
         }
         timeOutCheck(latch);
         log.info("开始合并scoreRanking");
-        esmusic.getCollection("scoreRanking").aggregate(Arrays.asList(new Document("$unset", "_id"),
+        esmusic.getCollection("scoreRankingTmp").aggregate(Arrays.asList(new Document("$unset", "_id"),
                 new Document("$merge",
-                        new Document("into", "pointRanking")
+                        new Document("into", "scoreRanking")
                                 .append("on", "userId")
                                 .append("whenMatched", "replace")
                                 .append("whenNotMatched", "insert")))).toCollection();
