@@ -16,6 +16,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.redis.connection.RedisZSetCommands;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
@@ -49,8 +50,8 @@ public class DAQServiceImpl implements DAQService, IMessageQuickReply {
     @Async
     public void saveAllRanking() {
         try {
-            ListenableFuture<Integer> pointRankingResult = eventService.saveAllPointRanking();
-            ListenableFuture<Integer> scoreRankingResult = eventService.saveAllScoreRanking();
+            ListenableFuture<Long> pointRankingResult = eventService.saveAllPointRanking();
+            ListenableFuture<Long> scoreRankingResult = eventService.saveAllScoreRanking();
             pointRankingResult.addCallback(new ListenableFutureCallback<>() {
                 @Override
                 public void onFailure(Throwable ex) {
@@ -59,8 +60,8 @@ public class DAQServiceImpl implements DAQService, IMessageQuickReply {
                 }
 
                 @Override
-                public void onSuccess(Integer result) {
-                    replyUtils.sendMessage("成功获得" + result + "页pointRanking");
+                public void onSuccess(Long result) {
+                    replyUtils.sendMessage("PointRankings更新完成，历时"+result+"ms");
                 }
             });
             scoreRankingResult.addCallback(new ListenableFutureCallback<>() {
@@ -71,8 +72,9 @@ public class DAQServiceImpl implements DAQService, IMessageQuickReply {
                 }
 
                 @Override
-                public void onSuccess(Integer result) {
-                    replyUtils.sendMessage("成功获得" + result + "页scoreRanking");
+                public void onSuccess(Long result) {
+                    replyUtils.sendMessage("ScoreRankings更新完成，历时"+result+"ms");
+
                 }
             });
 
