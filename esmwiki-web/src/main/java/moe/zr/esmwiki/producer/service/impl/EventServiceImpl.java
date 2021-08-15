@@ -142,7 +142,7 @@ public class EventServiceImpl implements EventService {
                 }
             });
         }
-        if (!latch.await(90, TimeUnit.SECONDS)) {
+        if (!latch.await(5, TimeUnit.MINUTES)) {
             log.warn("timeout");
             replyUtils.sendMessage("爬取PointRanking时超时了，呜呜呜");
         }
@@ -201,7 +201,7 @@ public class EventServiceImpl implements EventService {
                 }
             });
         }
-        if (!latch.await(90, TimeUnit.SECONDS)) {
+        if (!latch.await(5, TimeUnit.MINUTES)) {
             log.warn("timeout");
             replyUtils.sendMessage("爬取ScoreRankings时超时了，呜呜呜");
         }
@@ -219,7 +219,7 @@ public class EventServiceImpl implements EventService {
     }
 
     private void timeOutCheck(CountDownLatch latch) throws InterruptedException, TimeoutException {
-        if (!latch.await(90, TimeUnit.SECONDS)) {
+        if (!latch.await(5, TimeUnit.MINUTES)) {
             throw new TimeoutException("二次超时，放弃更新数据库！");
         }
         log.info("check ok");
