@@ -87,8 +87,6 @@ public class RankingRecordTask {
     @Scheduled(cron = "0 1 0/1 * * ?")
     private void refreshPointRanking() {
         if (eventConfig.getIsOpen()) {
-            daqService.dropCollection();
-            log.warn("成功删除集合");
             daqService.saveAllRanking();
         }
     }
