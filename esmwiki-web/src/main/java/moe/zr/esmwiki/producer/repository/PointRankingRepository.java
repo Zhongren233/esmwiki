@@ -18,6 +18,8 @@ public interface PointRankingRepository extends MongoRepository<PointRanking, St
 
     Integer countByPointGreaterThanEqual(Integer point);
 
+    List<PointRanking> findAllByUserIdIn(List<Integer> userIds);
+
     @Async
     default void insertAsync(Iterable<PointRanking> iterable) {
         List<PointRanking> insert = insert(iterable);

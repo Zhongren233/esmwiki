@@ -16,4 +16,13 @@ class ReplyUtilsTest {
     void groupMessage() {
         replyUtils.sendGroupPostingMessage("测试群发");
     }
+
+    @Test
+    void getGroup() {
+        replyUtils.getGroupMemberList(873579370L).forEach(System.out::println);
+    }
+    @Test
+    void getGroupMember() {
+        replyUtils.getGroupMemberDetailList(873579370L).forEach(System.out::println);
+    }
 }
