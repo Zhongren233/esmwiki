@@ -14,8 +14,10 @@ class SudoServiceImplTest {
     @Test
     void onMessage() {
         Message message = new Message();
-        message.setGroupId(773891409L);
-        message.setRawMessage("/sudo .sendGroup 测试");
+        message.setGroupId(939482111L);message.setUserId(732713726L);
+        message.setSelfId(938364861L);
+        message.setRawMessage("/sudo !renameCard");
         System.out.println(sudoService.onMessage(message));
+
     }
 }

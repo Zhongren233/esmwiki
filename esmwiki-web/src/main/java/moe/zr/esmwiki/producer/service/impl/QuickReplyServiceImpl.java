@@ -48,7 +48,9 @@ public class QuickReplyServiceImpl {
         IMessageQuickReply iMessageQuickReply = messageHandlerMap.get(command);
         String reply = null;
         if (iMessageQuickReply != null) {
-            reply = iMessageQuickReply.onMessage(message);
+            if ("anonymous".equals(message.getSubType())) {
+                reply = "藏于「" + jsonNode.get("anonymous").get("name").asText() + "」你心底的秘密";
+            } else reply = iMessageQuickReply.onMessage(message);
         }
         if ("/sudo".equals(command)) {
             reply = sudoService.onMessage(message);
