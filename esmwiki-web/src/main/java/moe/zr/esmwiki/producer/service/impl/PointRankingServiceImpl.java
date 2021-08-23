@@ -95,7 +95,7 @@ public class PointRankingServiceImpl implements PointRankingService {
             List<PointRanking> ranking = getPointRankings(currentPage);
             int size = ranking.size();
             PointRanking lastRanking = ranking.get(size - 1);
-            if (lastRanking.getPoint() > point) {
+            if (lastRanking.getPoint() >= point) {
                 /*
                  * 由于排行榜第一页19人 所以-1
                  */
@@ -121,7 +121,7 @@ public class PointRankingServiceImpl implements PointRankingService {
         Integer count;
         if (s == null) {
             Integer countInDB = pointRankingRepository.countByPointGreaterThanEqual(point);
-            count = getPointRewardCount(point, countInDB/20+1);
+            count = getPointRewardCount(point, countInDB / 20 + 1);
         } else {
             Integer startPage = Integer.valueOf(s);
             count = getPointRewardCount(point, startPage);
@@ -130,8 +130,8 @@ public class PointRankingServiceImpl implements PointRankingService {
         redisTemplate.opsForValue().set(
                 key + point,
                 String.valueOf(page),
-                12,
-                TimeUnit.HOURS);
+                30,
+                TimeUnit.MINUTES);
         return count;
     }
 
