@@ -31,6 +31,7 @@ public class RequestUtils {
                 "&resMd5="+resMd5 +
                 "&packageName=apple" + //这俩也不能动
                 "&platform=iOS" + //这俩也不能动
+                "&channel_uid=522e3495d82423b3675b035c9a06c69c" + //这俩也不能动
                 "&session="+config.getSession() +
                 "&hei_token="+config.getToken() +
                 "&login_type=mobile"; //这个不能动
@@ -41,7 +42,9 @@ public class RequestUtils {
         log.debug("请求的地址:{}",uri);
         log.debug("请求的参数(未加密):{}",content);
         addHeader(httpPost);
-        ByteArrayEntity byteArrayEntity = new ByteArrayEntity(CryptoUtils.encrypt(content));
+        byte[] encrypt = CryptoUtils.encrypt(content);
+        log.debug("请求头长度:{}",encrypt.length);
+        ByteArrayEntity byteArrayEntity = new ByteArrayEntity(encrypt);
         httpPost.setEntity(byteArrayEntity);
         return httpPost;
     }
