@@ -105,7 +105,6 @@ public class ReplyUtils {
         HttpPost post = basicPost("/get_group_member_list", mapper.createObjectNode().put("group_id", groupId));
         try {
             JsonNode jsonNode = httpClient.executeAsJsonNode(post);
-            System.out.println(jsonNode);
             return (ArrayNode) jsonNode.get("data");
         } catch (IOException | ExecutionException | InterruptedException e) {
             e.printStackTrace();

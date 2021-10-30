@@ -3,7 +3,7 @@ package moe.zr.enums;
 import java.util.Random;
 
 public enum Luck {
-    VERY_LUCKY("大吉"), LUCKY("吉"), UNLUCKY("凶"), VERY_UNLUCKY("大凶");
+    VERY_LUCKY("大吉"), LUCKY("吉"), UNLUCKY("凶"), VERY_UNLUCKY("大凶"),TRICK("🦇TRICK🦇"),TREAT("🍬TREAT🍬");
 
     private String luck;
 
