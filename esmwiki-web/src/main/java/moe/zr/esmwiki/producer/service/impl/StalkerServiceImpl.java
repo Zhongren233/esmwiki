@@ -167,8 +167,8 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
                         PointRanking pointRankingByRank = getPointRankingByRank(rank);
                         return MessageFormat.format(
                                 "昵称:{0}\n" +
-                                "活动排名:{1}\n" +
-                                "活动点数:{2}", pointRankingByRank.getUserProfile().getName(), pointRankingByRank.getRank(), pointRankingByRank.getPoint());
+                                        "活动排名:{1}\n" +
+                                        "活动点数:{2}", pointRankingByRank.getUserProfile().getName(), pointRankingByRank.getRank(), pointRankingByRank.getPoint());
                     } catch (Exception e) {
                         return e.getMessage();
                     }
@@ -218,7 +218,6 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
             }
             stringBuilder
                     .append("昵称:").append(userProfile.getName()).append("\n")
-//                    .append("id:").append(pointRanking.getUserId()).append("\n")
                     .append("活动点数排名:").append(pointRanking.getRank()).append("\n")
                     .append("活动点数:").append(pointRanking.getPoint()).append("\n");
             optionalScoreRanking.ifPresent(scoreRanking -> {
@@ -231,6 +230,9 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
         }
     }
 
+    public void getReturnImage(Integer userId) {
+
+    }
 
     @Override
     public Integer getUserId(String userArg, String option) {
