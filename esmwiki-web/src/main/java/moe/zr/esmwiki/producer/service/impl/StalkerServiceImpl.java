@@ -213,17 +213,17 @@ public class StalkerServiceImpl implements StalkerService, IMessageQuickReply {
                     pointRanking = realTimePointRanking;
                     userProfile = pointRanking.getUserProfile();
                 } else {
-                    stringBuilder.append("[警告]没有获取到实时PointRanking，可能是因为rank变化过大\n");
+                    stringBuilder.append("[警告]非实时Ranking\n");
                 }
             }
             stringBuilder
                     .append("昵称:").append(userProfile.getName()).append("\n")
                     .append("活动点数排名:").append(pointRanking.getRank()).append("\n")
                     .append("活动点数:").append(pointRanking.getPoint()).append("\n");
-            optionalScoreRanking.ifPresent(scoreRanking -> {
-                stringBuilder.append("活动歌曲排名:").append(scoreRanking.getRank()).append("\n");
-                stringBuilder.append("活动歌曲分数:").append(scoreRanking.getPoint()).append("\n");
-            });
+//            optionalScoreRanking.ifPresent(scoreRanking -> {
+//                stringBuilder.append("活动歌曲排名:").append(scoreRanking.getRank()).append("\n");
+//                stringBuilder.append("活动歌曲分数:").append(scoreRanking.getPoint()).append("\n");
+//            });
             return stringBuilder.toString();
         } else {
             return "[错误]没有查询到相关记录";
