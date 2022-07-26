@@ -1,3 +1,6 @@
+NEW VERSION IN
+https://github.com/Zhongren233/aira-core
+
 ## 简介
 
 `偶像梦幻祭2`的相关QQ bot项目
